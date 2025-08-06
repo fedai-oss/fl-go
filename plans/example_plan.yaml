@@ -1,0 +1,16 @@
+rounds: 1
+collaborators:
+  - id: "collab1"
+    address: "localhost:50051"
+  - id: "collab2"
+    address: "localhost:50051"
+aggregator:
+  address: "localhost:50051"
+initial_model: "models/init_model.pt"
+output_model: "models/aggregated_model.pt"
+tasks:
+  train:
+    script: "scripts/train.py"
+    args:
+      epochs: 1
+      batch_size: 32
