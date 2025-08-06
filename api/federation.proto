@@ -1,6 +1,8 @@
 syntax = "proto3";
 package federation;
 
+option go_package = "./api";
+
 service FederatedLearning {
   rpc JoinFederation(JoinRequest) returns (JoinResponse);
   rpc SubmitUpdate(ModelUpdate) returns (Ack);

@@ -3,13 +3,12 @@ package aggregator
 import (
 	"context"
 	"encoding/binary"
-	"fmt"
-	"io/ioutil"
 	"math"
 	"net"
+	"os"
 	"sync"
 
-	pb "github.com/ishaileshpant/openfl-go/api/federation"
+	pb "github.com/ishaileshpant/openfl-go/api"
 	"github.com/ishaileshpant/openfl-go/pkg/federation"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -17,6 +16,7 @@ import (
 
 // FedAvgAggregator implements a simple one-round FedAvg.
 type FedAvgAggregator struct {
+	pb.UnimplementedFederatedLearningServer
 	plan      *federation.FLPlan
 	mu        sync.Mutex
 	updates   [][]float32
@@ -35,7 +35,7 @@ func (a *FedAvgAggregator) Start(ctx context.Context) error {
 	srv := grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
 	pb.RegisterFederatedLearningServer(srv, a)
 	go srv.Serve(lis)
-	data, err := ioutil.ReadFile(a.plan.InitialModel)
+	data, err := os.ReadFile(a.plan.InitialModel)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (a *FedAvgAggregator) Start(ctx context.Context) error {
 	for i, v := range avg {
 		binary.LittleEndian.PutUint32(buf[i*4:], math.Float32bits(v))
 	}
-	if err := ioutil.WriteFile(a.plan.OutputModel, buf, 0644); err != nil {
+	if err := os.WriteFile(a.plan.OutputModel, buf, 0644); err != nil {
 		return err
 	}
 	srv.Stop()
@@ -69,7 +69,7 @@ func (a *FedAvgAggregator) Start(ctx context.Context) error {
 }
 
 func (a *FedAvgAggregator) JoinFederation(ctx context.Context, req *pb.JoinRequest) (*pb.JoinResponse, error) {
-	data, _ := ioutil.ReadFile(a.plan.InitialModel)
+	data, _ := os.ReadFile(a.plan.InitialModel)
 	return &pb.JoinResponse{InitialModel: data}, nil
 }
 
