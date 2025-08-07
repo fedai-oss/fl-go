@@ -3,9 +3,10 @@ package collaborator
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	pb "github.com/ishaileshpant/openfl-go/api"
@@ -25,6 +26,7 @@ func NewCollaborator(plan *federation.FLPlan, id string) *SimpleCollaborator {
 }
 
 func (c *SimpleCollaborator) Connect() error {
+	log.Printf("Connecting to aggregator at %s", c.plan.Aggregator.Address)
 	conn, err := grpc.Dial(c.plan.Aggregator.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -34,21 +36,31 @@ func (c *SimpleCollaborator) Connect() error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile("models/model_init.pt", resp.InitialModel, 0644)
+
+	// Create models directory if it doesn't exist
+	if err := os.MkdirAll("models", 0755); err != nil {
+		return err
+	}
+
+	return os.WriteFile("models/model_init.pt", resp.InitialModel, 0644)
 }
 
 func (c *SimpleCollaborator) RunTrainTask(task federation.TaskConfig) ([]byte, error) {
 	args := []string{task.Script, "--model-in", "models/model_init.pt", "--model-out", "models/update.pt"}
 	for k, v := range task.Args {
-		args = append(args, fmt.Sprintf("--%s", k), fmt.Sprint(v))
+		// Convert snake_case to kebab-case for Python argparse
+		kebabKey := strings.ReplaceAll(k, "_", "-")
+		args = append(args, fmt.Sprintf("--%s", kebabKey), fmt.Sprint(v))
 	}
+
+	log.Printf("Running training task: python3 %v", args)
 	cmd := exec.Command("python3", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return nil, err
 	}
-	return ioutil.ReadFile("models/update.pt")
+	return os.ReadFile("models/update.pt")
 }
 
 func (c *SimpleCollaborator) SubmitUpdate(weights []byte) error {

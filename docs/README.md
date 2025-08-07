@@ -10,8 +10,6 @@ One-round federated MNIST training:
 
 ## Setup & Run
 ```bash
-bash generate_openfl_go.sh
-cd openfl-go
 go mod download
 # In one terminal:
 go run cmd/aggregator/main.go

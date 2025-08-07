@@ -1,9 +1,9 @@
-rounds: 1
+rounds: 3
 collaborators:
   - id: "collab1"
-    address: "localhost:50051"
+    address: "localhost:50052"
   - id: "collab2"
-    address: "localhost:50051"
+    address: "localhost:50053"
 aggregator:
   address: "localhost:50051"
 initial_model: "models/init_model.pt"
