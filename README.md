@@ -160,20 +160,78 @@ def train_model(weights, epochs, batch_size, lr, data_path):
 
 ## Development
 
-### Building
+### Using the Makefile
+
+The project includes a comprehensive Makefile for common development tasks:
 
 ```bash
-go build -o fx cmd/fx/main.go
+# Show all available commands
+make help
+
+# Build the binary
+make build
+
+# Initialize a new workspace
+make workspace-init
+
+# Run a complete demo
+make run-demo
+
+# Run demo with large model (1000 parameters, 10 rounds)
+make run-demo-large
+
+# Clean build artifacts
+make clean
+
+# Clean everything including workspaces
+make clean-all
+```
+
+### Quick Commands
+
+```bash
+# Build and run basic demo
+make demo
+
+# Build and run large model demo
+make demo-large
+
+# Quick start individual components
+make run-aggregator
+make run-collaborator COLLAB_ID=collaborator1
+
+# Development setup
+make dev-setup    # Install deps, generate proto, lint, format
+make dev-build    # Full development build with checks
 ```
 
 ### Testing
 
 ```bash
-# Test plan validation
-fx plan validate plans/example_plan.yaml
+# Run all tests
+make test
 
-# Test workspace creation
-fx plan init --name test_workspace
+# Run tests with race detection
+make test-race
+
+# Run tests with coverage
+make test-coverage
+```
+
+### Docker Support
+
+```bash
+# Build Docker image
+make docker-build
+
+# Run in Docker
+make docker-run
+```
+
+### Manual Building
+
+```bash
+go build -o fx cmd/fx/main.go
 ```
 
 ### Adding New Features

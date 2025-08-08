@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+build/
+*.log
+
+# Workspace directories
+fl_workspace/
+large_model_test/
+test_workspace/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage.out
+coverage.html
+
+# Documentation
+docs/
+*.md
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Makefile
+Makefile

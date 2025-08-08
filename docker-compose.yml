@@ -1,0 +1,74 @@
+services:
+  # OpenFL-Go Aggregator
+  aggregator:
+    build: .
+    container_name: openfl-aggregator
+    ports:
+      - "50061:50061"
+    volumes:
+      - ./workspace:/app/workspace
+    working_dir: /app/workspace
+    command: ["../fx", "aggregator", "start"]
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - openfl-network
+
+  # OpenFL-Go Collaborator 1
+  collaborator1:
+    build: .
+    container_name: openfl-collaborator1
+    ports:
+      - "50062:50062"
+    volumes:
+      - ./workspace:/app/workspace
+    working_dir: /app/workspace
+    command: ["../fx", "collaborator", "start", "collaborator1"]
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - aggregator
+    networks:
+      - openfl-network
+
+  # OpenFL-Go Collaborator 2
+  collaborator2:
+    build: .
+    container_name: openfl-collaborator2
+    ports:
+      - "50063:50063"
+    volumes:
+      - ./workspace:/app/workspace
+    working_dir: /app/workspace
+    command: ["../fx", "collaborator", "start", "collaborator2"]
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - aggregator
+    networks:
+      - openfl-network
+
+  # Development shell for manual testing
+  dev-shell:
+    build: .
+    container_name: openfl-dev-shell
+    ports:
+      - "50064:50064"
+    volumes:
+      - ./workspace:/app/workspace
+      - .:/app/source
+    working_dir: /app/workspace
+    command: ["/bin/sh"]
+    stdin_open: true
+    tty: true
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - openfl-network
+
+networks:
+  openfl-network:
+    driver: bridge
+
+volumes:
+  workspace-data:

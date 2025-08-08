@@ -244,9 +244,12 @@ func createInitialModel(workspacePath string) error {
 		return err
 	}
 
-	// Create a simple initial model with 10 float32 parameters
-	// This mimics what the Python script would create
-	weights := []float32{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}
+	// Create a larger initial model with 1000 float32 parameters
+	// This mimics a more realistic neural network model
+	weights := make([]float32, 1000)
+	for i := range weights {
+		weights[i] = float32(i) * 0.001 // Small initial weights
+	}
 
 	// Convert to binary format (little-endian float32)
 	buf := make([]byte, len(weights)*4)
