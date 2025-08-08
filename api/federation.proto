@@ -6,6 +6,7 @@ option go_package = "./api";
 service FederatedLearning {
   rpc JoinFederation(JoinRequest) returns (JoinResponse);
   rpc SubmitUpdate(ModelUpdate) returns (Ack);
+  rpc GetLatestModel(GetModelRequest) returns (GetModelResponse);
 }
 
 message JoinRequest {
@@ -23,4 +24,13 @@ message ModelUpdate {
 
 message Ack {
   bool success = 1;
+}
+
+message GetModelRequest {
+  string collaborator_id = 1;
+}
+
+message GetModelResponse {
+  bytes model_weights = 1;
+  int32 current_round = 2;
 }

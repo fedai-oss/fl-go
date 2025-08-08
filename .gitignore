@@ -1,0 +1,106 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+fx
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# Build directories
+build/
+dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Temporary directories
+test_*/
+temp_*/
+demo_*/
+*_test/
+*_workspace/
+
+# Model files (can be large)
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.pb
+
+# Data directories
+data/
+save/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# Protobuf generated files (if you want to exclude them)
+# *.pb.go
+# *_grpc.pb.go
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Docker
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Local development
+.local/

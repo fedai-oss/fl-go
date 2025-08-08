@@ -11,6 +11,9 @@ FL-Go provides the same CLI-driven workflow as the original OpenFL but with Go h
 - **Python ML Integration**: Seamless delegation of training/evaluation to Python
 - **gRPC Communication**: Secure, efficient communication between components
 - **Multi-round Federated Learning**: Support for multiple training rounds
+- **Asynchronous Federated Learning**: Based on [Papaya paper](https://arxiv.org/abs/2111.04877) for scalable FL
+- **Mode Switching**: Easy switching between synchronous and asynchronous FL modes
+- **Staleness-Aware Aggregation**: Intelligent handling of stale updates in async mode
 - **Extensible Architecture**: Easy to add new aggregation algorithms
 
 ## Architecture
@@ -55,7 +58,9 @@ my_experiment/
 
 Edit `plan.yaml` to configure your federated learning experiment:
 
+#### Synchronous Mode (Default)
 ```yaml
+mode: "sync"  # Traditional round-based FL
 rounds: 3
 collaborators:
   - id: "collaborator1"
@@ -74,6 +79,36 @@ tasks:
       batch_size: 32
       lr: 0.001
       data_path: "data"
+```
+
+#### Asynchronous Mode (Papaya-style)
+```yaml
+mode: "async"  # Non-round-based FL
+rounds: 100  # Maximum rounds (async continues until stopped)
+collaborators:
+  - id: "collaborator1"
+    address: "localhost:50052"
+  - id: "collaborator2" 
+    address: "localhost:50053"
+aggregator:
+  address: "localhost:50051"
+initial_model: "save/init_model.pt"
+output_model: "save/async_final_model.pt"
+tasks:
+  train:
+    script: "src/taskrunner.py"
+    args:
+      epochs: 5
+      batch_size: 32
+      lr: 0.001
+      data_path: "data"
+
+# Async-specific configuration
+async_config:
+  max_staleness: 300      # Maximum staleness in seconds
+  min_updates: 1          # Minimum updates before aggregation
+  aggregation_delay: 10   # Delay in seconds before aggregating
+  staleness_weight: 0.95  # Weight decay factor for stale updates
 ```
 
 ### 3. Start the Aggregator
@@ -240,6 +275,18 @@ go build -o fx cmd/fx/main.go
 2. **New aggregation algorithms**: Extend `pkg/aggregator/`
 3. **Custom protocols**: Modify `api/federation.proto`
 
+## FL Modes Comparison
+
+| Feature | Synchronous FL | Asynchronous FL |
+|---------|----------------|-----------------|
+| **Training Style** | Round-based | Continuous |
+| **Synchronization** | All collaborators wait | No waiting |
+| **Scalability** | Limited by slowest | Handles stragglers |
+| **Convergence** | Predictable | Faster (5x) |
+| **Communication** | Synchronized rounds | On-demand |
+| **Resource Usage** | Idle waiting | Full utilization |
+| **Best For** | Small-medium scale | Large scale, production |
+
 ## Comparison with Original OpenFL
 
 | Feature | OpenFL (Python) | FL-Go |
@@ -251,6 +298,9 @@ go build -o fx cmd/fx/main.go
 | ML Training | Python | Python (delegated) |
 | Communication | gRPC | gRPC |
 | Performance | Good | Excellent |
+| **Async FL Support** | ❌ | ✅ (Papaya-based) |
+| **Mode Switching** | ❌ | ✅ |
+| **Staleness Handling** | ❌ | ✅ |
 
 ## License
 

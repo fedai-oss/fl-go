@@ -1,0 +1,27 @@
+# Asynchronous Federated Learning Configuration (Papaya-style)
+mode: "async"  # Asynchronous mode based on Papaya paper
+rounds: 100    # Maximum rounds (async will continue until stopped)
+collaborators:
+  - id: "collab1"
+    address: "localhost:50052"
+  - id: "collab2"
+    address: "localhost:50053"
+  - id: "collab3"
+    address: "localhost:50054"
+aggregator:
+  address: "localhost:50051"
+initial_model: "models/init_model.pt"
+output_model: "models/async_aggregated_model.pt"
+tasks:
+  train:
+    script: "scripts/train.py"
+    args:
+      epochs: 1
+      batch_size: 32
+
+# Async-specific configuration based on Papaya paper
+async_config:
+  max_staleness: 600      # Maximum staleness in seconds (10 minutes)
+  min_updates: 1          # Minimum updates before aggregation (1 for immediate)
+  aggregation_delay: 5    # Delay in seconds before aggregating (5 seconds)
+  staleness_weight: 0.98  # Weight decay factor for stale updates (0.98^staleness)

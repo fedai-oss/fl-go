@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/ishaileshpant/fl-go/pkg/collaborator"
 	"github.com/ishaileshpant/fl-go/pkg/federation"
@@ -59,6 +58,11 @@ func handleCollaboratorStart(args []string) error {
 		return fmt.Errorf("failed to load plan: %v", err)
 	}
 
+	// Set default mode if not specified
+	if plan.Mode == "" {
+		plan.Mode = federation.ModeSync
+	}
+
 	// Find this collaborator in the plan
 	var found bool
 	for _, collab := range plan.Collaborators {
@@ -78,7 +82,19 @@ func handleCollaboratorStart(args []string) error {
 
 	fmt.Printf("🤝 Starting collaborator: %s\n", collaboratorName)
 	fmt.Printf("📊 Configuration:\n")
+	fmt.Printf("   Mode: %s\n", plan.Mode)
 	fmt.Printf("   Aggregator: %s\n", plan.Aggregator.Address)
+
+	if plan.Mode == federation.ModeSync {
+		fmt.Printf("   Rounds: %d\n", plan.Rounds)
+	} else {
+		fmt.Printf("   Async Config:\n")
+		fmt.Printf("     Max Staleness: %d\n", plan.AsyncConfig.MaxStaleness)
+		fmt.Printf("     Min Updates: %d\n", plan.AsyncConfig.MinUpdates)
+		fmt.Printf("     Aggregation Delay: %ds\n", plan.AsyncConfig.AggregationDelay)
+		fmt.Printf("     Staleness Weight: %.3f\n", plan.AsyncConfig.StalenessWeight)
+	}
+
 	fmt.Printf("   Training Script: %s\n", plan.Tasks.Train.Script)
 	fmt.Printf("   Epochs: %v\n", plan.Tasks.Train.Args["epochs"])
 	fmt.Printf("   Batch Size: %v\n", plan.Tasks.Train.Args["batch_size"])
@@ -91,36 +107,15 @@ func handleCollaboratorStart(args []string) error {
 	}
 
 	fmt.Printf("✅ Connected successfully!\n")
-	fmt.Printf("🎯 Starting federated learning rounds...\n\n")
+	fmt.Printf("🎯 Starting federated learning...\n\n")
 
-	// Start federated learning rounds
-	for round := 1; round <= plan.Rounds; round++ {
-		fmt.Printf("📍 Round %d/%d\n", round, plan.Rounds)
-
-		// Run training task
-		fmt.Printf("🔄 Running training task...\n")
-		weights, err := collab.RunTrainTask(plan.Tasks.Train)
-		if err != nil {
-			return fmt.Errorf("training failed in round %d: %v", round, err)
-		}
-
-		// Submit update to aggregator
-		fmt.Printf("📤 Submitting model update...\n")
-		if err := collab.SubmitUpdate(weights); err != nil {
-			return fmt.Errorf("failed to submit update in round %d: %v", round, err)
-		}
-
-		fmt.Printf("✅ Round %d completed\n", round)
-
-		// Wait a bit before next round (if not last round)
-		if round < plan.Rounds {
-			fmt.Printf("⏳ Waiting for next round...\n\n")
-			time.Sleep(2 * time.Second)
-		}
+	// Use the new Run method that handles both sync and async modes
+	if err := collab.Run(plan.Tasks.Train); err != nil {
+		return fmt.Errorf("federated learning failed: %v", err)
 	}
 
 	fmt.Printf("\n🎉 Federated learning completed!\n")
-	fmt.Printf("📊 Collaborator '%s' participated in %d rounds\n", collaboratorName, plan.Rounds)
+	fmt.Printf("📊 Collaborator '%s' completed training in %s mode\n", collaboratorName, plan.Mode)
 
 	return nil
 }

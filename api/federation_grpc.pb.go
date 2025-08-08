@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	FederatedLearning_JoinFederation_FullMethodName = "/federation.FederatedLearning/JoinFederation"
 	FederatedLearning_SubmitUpdate_FullMethodName   = "/federation.FederatedLearning/SubmitUpdate"
+	FederatedLearning_GetLatestModel_FullMethodName = "/federation.FederatedLearning/GetLatestModel"
 )
 
 // FederatedLearningClient is the client API for FederatedLearning service.
@@ -29,6 +30,7 @@ const (
 type FederatedLearningClient interface {
 	JoinFederation(ctx context.Context, in *JoinRequest, opts ...grpc.CallOption) (*JoinResponse, error)
 	SubmitUpdate(ctx context.Context, in *ModelUpdate, opts ...grpc.CallOption) (*Ack, error)
+	GetLatestModel(ctx context.Context, in *GetModelRequest, opts ...grpc.CallOption) (*GetModelResponse, error)
 }
 
 type federatedLearningClient struct {
@@ -59,12 +61,23 @@ func (c *federatedLearningClient) SubmitUpdate(ctx context.Context, in *ModelUpd
 	return out, nil
 }
 
+func (c *federatedLearningClient) GetLatestModel(ctx context.Context, in *GetModelRequest, opts ...grpc.CallOption) (*GetModelResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetModelResponse)
+	err := c.cc.Invoke(ctx, FederatedLearning_GetLatestModel_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FederatedLearningServer is the server API for FederatedLearning service.
 // All implementations must embed UnimplementedFederatedLearningServer
 // for forward compatibility.
 type FederatedLearningServer interface {
 	JoinFederation(context.Context, *JoinRequest) (*JoinResponse, error)
 	SubmitUpdate(context.Context, *ModelUpdate) (*Ack, error)
+	GetLatestModel(context.Context, *GetModelRequest) (*GetModelResponse, error)
 	mustEmbedUnimplementedFederatedLearningServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedFederatedLearningServer) JoinFederation(context.Context, *Joi
 }
 func (UnimplementedFederatedLearningServer) SubmitUpdate(context.Context, *ModelUpdate) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitUpdate not implemented")
+}
+func (UnimplementedFederatedLearningServer) GetLatestModel(context.Context, *GetModelRequest) (*GetModelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLatestModel not implemented")
 }
 func (UnimplementedFederatedLearningServer) mustEmbedUnimplementedFederatedLearningServer() {}
 func (UnimplementedFederatedLearningServer) testEmbeddedByValue()                           {}
@@ -138,6 +154,24 @@ func _FederatedLearning_SubmitUpdate_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FederatedLearning_GetLatestModel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetModelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FederatedLearningServer).GetLatestModel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FederatedLearning_GetLatestModel_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FederatedLearningServer).GetLatestModel(ctx, req.(*GetModelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FederatedLearning_ServiceDesc is the grpc.ServiceDesc for FederatedLearning service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var FederatedLearning_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SubmitUpdate",
 			Handler:    _FederatedLearning_SubmitUpdate_Handler,
+		},
+		{
+			MethodName: "GetLatestModel",
+			Handler:    _FederatedLearning_GetLatestModel_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

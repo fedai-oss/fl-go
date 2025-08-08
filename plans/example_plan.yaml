@@ -1,3 +1,5 @@
+# Synchronous Federated Learning Configuration
+mode: "sync"  # Options: "sync" or "async"
 rounds: 3
 collaborators:
   - id: "collab1"
@@ -14,3 +16,10 @@ tasks:
     args:
       epochs: 1
       batch_size: 32
+
+# Async-specific configuration (used when mode: "async")
+async_config:
+  max_staleness: 300      # Maximum staleness in seconds (5 minutes)
+  min_updates: 1          # Minimum updates before aggregation
+  aggregation_delay: 10   # Delay in seconds before aggregating
+  staleness_weight: 0.95  # Weight decay factor for stale updates (0.95^staleness)

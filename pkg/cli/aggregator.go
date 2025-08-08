@@ -53,15 +53,31 @@ func handleAggregatorStart(args []string) error {
 		return fmt.Errorf("failed to load plan: %v", err)
 	}
 
+	// Set default mode if not specified
+	if plan.Mode == "" {
+		plan.Mode = federation.ModeSync
+	}
+
 	fmt.Printf("🚀 Starting aggregator...\n")
 	fmt.Printf("📊 Configuration:\n")
+	fmt.Printf("   Mode: %s\n", plan.Mode)
 	fmt.Printf("   Address: %s\n", plan.Aggregator.Address)
-	fmt.Printf("   Rounds: %d\n", plan.Rounds)
+
+	if plan.Mode == federation.ModeSync {
+		fmt.Printf("   Rounds: %d\n", plan.Rounds)
+	} else {
+		fmt.Printf("   Async Config:\n")
+		fmt.Printf("     Max Staleness: %d\n", plan.AsyncConfig.MaxStaleness)
+		fmt.Printf("     Min Updates: %d\n", plan.AsyncConfig.MinUpdates)
+		fmt.Printf("     Aggregation Delay: %ds\n", plan.AsyncConfig.AggregationDelay)
+		fmt.Printf("     Staleness Weight: %.3f\n", plan.AsyncConfig.StalenessWeight)
+	}
+
 	fmt.Printf("   Collaborators: %d\n", len(plan.Collaborators))
 	fmt.Printf("   Initial Model: %s\n", plan.InitialModel)
 	fmt.Printf("   Output Model: %s\n", plan.OutputModel)
 
-	agg := aggregator.NewFedAvgAggregator(plan)
+	agg := aggregator.NewAggregator(plan)
 
 	fmt.Printf("\n🎯 Aggregator ready! Waiting for collaborators to connect...\n")
 	fmt.Printf("💡 To start collaborators, run: fx collaborator start <name>\n\n")
