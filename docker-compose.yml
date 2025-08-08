@@ -1,5 +1,5 @@
 services:
-  # OpenFL-Go Aggregator
+  # FL-Go Aggregator
   aggregator:
     build: .
     container_name: openfl-aggregator
@@ -14,7 +14,7 @@ services:
     networks:
       - openfl-network
 
-  # OpenFL-Go Collaborator 1
+  # FL-Go Collaborator 1
   collaborator1:
     build: .
     container_name: openfl-collaborator1
@@ -31,7 +31,7 @@ services:
     networks:
       - openfl-network
 
-  # OpenFL-Go Collaborator 2
+  # FL-Go Collaborator 2
   collaborator2:
     build: .
     container_name: openfl-collaborator2

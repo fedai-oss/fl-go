@@ -1,4 +1,4 @@
-# OpenFL-Go Makefile
+# FL-Go Makefile
 # A Go implementation of OpenFL - An Open Framework for Federated Learning
 
 .PHONY: help build clean test run-aggregator run-collaborator run-demo workspace-init workspace-clean deps proto lint format docker-build docker-run
@@ -7,12 +7,12 @@
 BINARY_NAME=fx
 BUILD_DIR=build
 WORKSPACE_NAME=fl_workspace
-DOCKER_IMAGE=openfl-go
+DOCKER_IMAGE=fl-go
 DOCKER_TAG=latest
 
 # Default target
 help: ## Show this help message
-	@echo "OpenFL-Go - A Go implementation of OpenFL"
+	@echo "FL-Go - A Go implementation of OpenFL"
 	@echo ""
 	@echo "Available targets:"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -25,7 +25,7 @@ help: ## Show this help message
 
 # Build targets
 build: ## Build the fx binary
-	@echo "🔨 Building OpenFL-Go binary..."
+	@echo "🔨 Building FL-Go binary..."
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(BINARY_NAME) cmd/fx/main.go
 	@echo "✅ Binary built: $(BUILD_DIR)/$(BINARY_NAME)"
@@ -123,7 +123,7 @@ run-collaborator: build ## Run collaborator (requires workspace and collaborator
 
 # Demo targets
 run-demo: build workspace-init ## Run a complete FL demo
-	@echo "🎬 Starting OpenFL-Go demo..."
+	@echo "🎬 Starting FL-Go demo..."
 	@cd $(WORKSPACE_NAME) && \
 	echo "🚀 Starting aggregator..." && \
 	../$(BUILD_DIR)/$(BINARY_NAME) aggregator start > aggregator.log 2>&1 & \
@@ -142,7 +142,7 @@ run-demo: build workspace-init ## Run a complete FL demo
 	echo "✅ Demo completed! Check logs in $(WORKSPACE_NAME)/"
 
 run-demo-large: build workspace-init-large ## Run demo with large model
-	@echo "🎬 Starting OpenFL-Go large model demo..."
+	@echo "🎬 Starting FL-Go large model demo..."
 	@cd large_model_test && \
 	echo "🚀 Starting aggregator..." && \
 	../$(BUILD_DIR)/$(BINARY_NAME) aggregator start > aggregator.log 2>&1 & \
@@ -187,8 +187,8 @@ docker-run: docker-build ## Run in Docker
 	@echo "🐳 Running in Docker..."
 	docker run -it --rm $(DOCKER_IMAGE):$(DOCKER_TAG)
 
-docker-compose-up: ## Start OpenFL-Go with Docker Compose
-	@echo "🐳 Starting OpenFL-Go with Docker Compose..."
+docker-compose-up: ## Start FL-Go with Docker Compose
+	@echo "🐳 Starting FL-Go with Docker Compose..."
 	docker-compose up --build
 
 docker-compose-down: ## Stop Docker Compose services
@@ -215,7 +215,7 @@ uninstall: ## Uninstall binary
 	@echo "✅ Binary uninstalled"
 
 version: ## Show version information
-	@echo "OpenFL-Go version information:"
+	@echo "FL-Go version information:"
 	@echo "  Go version: $(shell go version)"
 	@echo "  Git commit: $(shell git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
 	@echo "  Build time: $(shell date)"

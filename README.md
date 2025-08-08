@@ -1,8 +1,8 @@
-# OpenFL-Go
+# FL-Go
 
 A Go implementation of [OpenFL](https://github.com/securefederatedai/openfl) - An Open Framework for Federated Learning.
 
-OpenFL-Go provides the same CLI-driven workflow as the original OpenFL but with Go handling the orchestration and coordination while delegating ML operations to Python scripts.
+FL-Go provides the same CLI-driven workflow as the original OpenFL but with Go handling the orchestration and coordination while delegating ML operations to Python scripts.
 
 ## Features
 
@@ -131,7 +131,7 @@ fx collaborator start collab1 --plan custom_plan.yaml
 
 ## Python Integration
 
-OpenFL-Go delegates all ML operations to Python scripts. The included `taskrunner.py` provides a template that:
+FL-Go delegates all ML operations to Python scripts. The included `taskrunner.py` provides a template that:
 
 1. **Loads models** from binary files
 2. **Runs training** with your ML framework (PyTorch, TensorFlow, etc.)  
@@ -242,7 +242,7 @@ go build -o fx cmd/fx/main.go
 
 ## Comparison with Original OpenFL
 
-| Feature | OpenFL (Python) | OpenFL-Go |
+| Feature | OpenFL (Python) | FL-Go |
 |---------|----------------|-----------|
 | CLI Interface | ✅ | ✅ |
 | Workspace Init | `fx plan init` | `fx plan init` |

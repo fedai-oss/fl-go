@@ -1,4 +1,4 @@
-# OpenFL-Go E2E MVP
+# FL-Go E2E MVP
 
 One-round federated MNIST training:
 - Go for orchestration (gRPC + FedAvg)

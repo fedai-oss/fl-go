@@ -1,4 +1,4 @@
-# OpenFL-Go Dockerfile
+# FL-Go Dockerfile
 # Multi-stage build for efficient containerization
 
 # Build stage

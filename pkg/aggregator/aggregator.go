@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	pb "github.com/ishaileshpant/openfl-go/api"
-	"github.com/ishaileshpant/openfl-go/pkg/federation"
+	pb "github.com/ishaileshpant/fl-go/api"
+	"github.com/ishaileshpant/fl-go/pkg/federation"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

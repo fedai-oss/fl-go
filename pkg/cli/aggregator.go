@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ishaileshpant/openfl-go/pkg/aggregator"
-	"github.com/ishaileshpant/openfl-go/pkg/federation"
+	"github.com/ishaileshpant/fl-go/pkg/aggregator"
+	"github.com/ishaileshpant/fl-go/pkg/federation"
 )
 
 // HandleAggregatorCommand handles all aggregator-related commands

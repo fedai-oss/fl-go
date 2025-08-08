@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ishaileshpant/openfl-go/pkg/federation"
+	"github.com/ishaileshpant/fl-go/pkg/federation"
 )
 
 // HandlePlanCommand handles all plan-related commands
@@ -51,7 +51,7 @@ func handlePlanInit(args []string) error {
 		}
 	}
 
-	fmt.Printf("🔄 Initializing OpenFL workspace: %s\n", planName)
+	fmt.Printf("🔄 Initializing FL workspace: %s\n", planName)
 
 	// Create workspace directory
 	if err := os.MkdirAll(planName, 0755); err != nil {
@@ -91,7 +91,7 @@ func handlePlanInit(args []string) error {
 		return fmt.Errorf("failed to create initial model: %v", err)
 	}
 
-	fmt.Printf("✅ Successfully initialized OpenFL workspace: %s\n", planName)
+	fmt.Printf("✅ Successfully initialized FL workspace: %s\n", planName)
 	fmt.Printf("📁 Workspace structure:\n")
 	fmt.Printf("   %s/\n", planName)
 	fmt.Printf("   ├── plan.yaml          # Federated learning configuration\n")
@@ -142,7 +142,7 @@ func createDefaultPlan(path string, templateType string) error {
 func createTrainingScript(path string) error {
 	script := `#!/usr/bin/env python3
 """
-OpenFL-Go TaskRunner - Python training script for federated learning
+FL-Go TaskRunner - Python training script for federated learning
 This script interfaces with the Go aggregator/collaborator components.
 """
 import argparse
@@ -196,7 +196,7 @@ def train_model(weights, epochs, batch_size, lr, data_path):
     return updated_weights
 
 def main():
-    parser = argparse.ArgumentParser(description='OpenFL-Go TaskRunner')
+    parser = argparse.ArgumentParser(description='FL-Go TaskRunner')
     parser.add_argument('--model-in', required=True, help='Input model path')
     parser.add_argument('--model-out', required=True, help='Output model path')
     parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs')

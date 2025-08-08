@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ishaileshpant/openfl-go/pkg/cli"
+	"github.com/ishaileshpant/fl-go/pkg/cli"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 			log.Fatalf("Collaborator command failed: %v", err)
 		}
 	case "version":
-		fmt.Println("OpenFL-Go v1.0.0")
+		fmt.Println("FL-Go v1.0.0")
 	case "help", "--help", "-h":
 		printUsage()
 	default:
@@ -42,7 +42,7 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Println("OpenFL-Go - A Go implementation of OpenFL")
+	fmt.Println("FL-Go - A Go implementation of OpenFL")
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println("  fx <command> [arguments]")

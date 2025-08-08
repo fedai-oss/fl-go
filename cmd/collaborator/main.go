@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/ishaileshpant/openfl-go/pkg/collaborator"
-	"github.com/ishaileshpant/openfl-go/pkg/federation"
 	"log"
+
+	"github.com/ishaileshpant/fl-go/pkg/collaborator"
+	"github.com/ishaileshpant/fl-go/pkg/federation"
 )
 
 func main() {

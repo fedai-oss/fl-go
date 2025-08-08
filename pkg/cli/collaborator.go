@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/ishaileshpant/openfl-go/pkg/collaborator"
-	"github.com/ishaileshpant/openfl-go/pkg/federation"
+	"github.com/ishaileshpant/fl-go/pkg/collaborator"
+	"github.com/ishaileshpant/fl-go/pkg/federation"
 )
 
 // HandleCollaboratorCommand handles all collaborator-related commands
