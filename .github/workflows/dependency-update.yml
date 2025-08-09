@@ -1,0 +1,138 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-go-dependencies:
+    name: Update Go Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.22
+
+    - name: Update Go dependencies
+      run: |
+        echo "📦 Updating Go dependencies..."
+        go get -u all
+        go mod tidy
+        go mod verify
+
+    - name: Test with updated dependencies
+      run: |
+        make build
+        make test
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "deps: update Go dependencies"
+        title: "🔄 Update Go Dependencies"
+        body: |
+          ## Automated Dependency Update
+          
+          This PR updates Go dependencies to their latest versions.
+          
+          ### Changes
+          - Updated all Go dependencies to latest versions
+          - Ran `go mod tidy` to clean up module files
+          - All tests pass with updated dependencies
+          
+          ### Validation
+          - ✅ Build successful
+          - ✅ Tests passing
+          - ✅ Module verification successful
+          
+          This PR was automatically created by the dependency update workflow.
+        branch: automated/update-go-deps
+        delete-branch: true
+        labels: |
+          dependencies
+          automated
+        assignees: ${{ github.actor }}
+
+  update-github-actions:
+    name: Update GitHub Actions
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update GitHub Actions
+      uses: renovatebot/github-action@v39.2.0
+      with:
+        configurationFile: .github/renovate.json
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.22
+
+    - name: Run security audit
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+    - name: Run gosec security scanner
+      uses: securecodewarrior/github-action-gosec@master
+      with:
+        args: './...'
+
+    - name: Create security issue if vulnerabilities found
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const title = `🚨 Security Vulnerabilities Detected`;
+          const body = `
+          ## Security Audit Report
+          
+          **Date:** ${new Date().toISOString()}
+          **Workflow:** Security Audit
+          **Status:** ❌ FAILED
+          
+          Security vulnerabilities have been detected in the codebase or dependencies.
+          
+          **Action Required:**
+          1. Review the failed workflow logs
+          2. Update vulnerable dependencies
+          3. Apply security patches
+          4. Re-run security audit
+          
+          **Details:**
+          [View audit results](${context.payload.repository.html_url}/actions/runs/${context.runId})
+          
+          This issue was automatically created by the security audit workflow.
+          `;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['security', 'automated', 'urgent']
+          });

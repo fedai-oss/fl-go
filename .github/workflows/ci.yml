@@ -1,0 +1,326 @@
+name: FL-GO CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily at 2 AM UTC to catch any issues
+    - cron: '0 2 * * *'
+
+jobs:
+  # Job 1: Basic checks and tests
+  test:
+    name: Tests and Linting
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.21, 1.22]
+        python-version: [3.9, 3.11]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install torch torchvision numpy
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ matrix.go-version }}-
+
+    - name: Download Go dependencies
+      run: go mod download
+
+    - name: Verify Go dependencies
+      run: go mod verify
+
+    - name: Build FL-GO
+      run: make build
+
+    - name: Run Go tests
+      run: make test
+
+    - name: Run Go tests with race detection
+      run: make test-race
+
+    - name: Generate test coverage
+      run: make test-coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.out
+        flags: unittests
+        name: codecov-umbrella
+
+    - name: Run linting
+      run: |
+        go install golang.org/x/tools/cmd/goimports@latest
+        make lint
+
+    - name: Check formatting
+      run: |
+        make format
+        git diff --exit-code
+
+  # Job 2: FL Validation (Sync and Async)
+  fl-validation:
+    name: Federated Learning Validation
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      matrix:
+        python-version: [3.9, 3.11]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.22
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install torch torchvision numpy
+
+    - name: Build FL-GO
+      run: make build
+
+    - name: Run comprehensive FL validation
+      run: |
+        echo "🧪 Running FL-GO Validation with Python ${{ matrix.python-version }}"
+        make validate
+      timeout-minutes: 15
+
+    - name: Upload validation logs
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: fl-validation-logs-python${{ matrix.python-version }}
+        path: |
+          validation_test/*/aggregator.log
+          validation_test/*/collab*.log
+          validation_test/*/save/
+        retention-days: 7
+
+  # Job 3: Docker build and test
+  docker:
+    name: Docker Build and Test
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      run: make docker-build
+
+    - name: Test Docker image
+      run: |
+        # Test that the Docker image can run basic commands
+        docker run --rm fedai-oss/fl-go:latest fx --help
+        docker run --rm fedai-oss/fl-go:latest fx version
+
+  # Job 4: Security and dependency checks
+  security:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.22
+
+    - name: Run Gosec Security Scanner
+      uses: securecodewarrior/github-action-gosec@master
+      with:
+        args: '-fmt sarif -out gosec.sarif ./...'
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: gosec.sarif
+
+    - name: Run Go vulnerability check
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+  # Job 5: Performance benchmarks
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.22
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install torch torchvision numpy
+
+    - name: Build FL-GO
+      run: make build
+
+    - name: Run performance benchmarks
+      run: |
+        echo "🚀 Running performance benchmarks..."
+        # Run validation with timing
+        time make validate
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-benchmarks
+        path: |
+          validation_test/*/aggregator.log
+          validation_test/*/collab*.log
+        retention-days: 30
+
+  # Job 6: Multi-platform build test
+  multi-platform:
+    name: Multi-platform Build
+    runs-on: ${{ matrix.os }}
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        go-version: [1.22]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Build for ${{ matrix.os }}
+      run: |
+        go build -o fx cmd/fx/main.go
+
+    - name: Test basic functionality
+      run: |
+        ./fx --help
+        ./fx version
+
+  # Job 7: Release preparation (only on main branch)
+  release-check:
+    name: Release Preparation
+    runs-on: ubuntu-latest
+    needs: [test, fl-validation, docker, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.22
+
+    - name: Build release artifacts
+      run: |
+        # Build for multiple architectures
+        GOOS=linux GOARCH=amd64 go build -o build/fx-linux-amd64 cmd/fx/main.go
+        GOOS=darwin GOARCH=amd64 go build -o build/fx-darwin-amd64 cmd/fx/main.go
+        GOOS=darwin GOARCH=arm64 go build -o build/fx-darwin-arm64 cmd/fx/main.go
+        GOOS=windows GOARCH=amd64 go build -o build/fx-windows-amd64.exe cmd/fx/main.go
+
+    - name: Upload release artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-binaries
+        path: build/fx-*
+        retention-days: 30
+
+  # Job 8: Notification on failure
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [test, fl-validation, docker, security]
+    if: failure()
+
+    steps:
+    - name: Create issue on failure
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const title = `CI Pipeline Failed - ${context.workflow} #${context.runNumber}`;
+          const body = `
+          ## CI Pipeline Failure Report
+          
+          **Workflow:** ${context.workflow}
+          **Run Number:** ${context.runNumber}
+          **Commit:** ${context.sha}
+          **Branch:** ${context.ref}
+          **Actor:** ${context.actor}
+          
+          **Failed Jobs:**
+          ${{ toJSON(needs) }}
+          
+          **Details:**
+          [View failed run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+          
+          This issue was automatically created by the CI pipeline.
+          `;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['ci-failure', 'automated']
+          });

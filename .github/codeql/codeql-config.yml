@@ -1,0 +1,19 @@
+name: "FL-GO CodeQL Config"
+
+disable-default-queries: false
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+paths:
+  - cmd
+  - pkg
+  - scripts
+
+paths-ignore:
+  - "**/*_test.go"
+  - "**/testdata/**"
+  - "validation_test/**"
+  - "build/**"
+  - ".git/**"
