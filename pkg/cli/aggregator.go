@@ -62,6 +62,20 @@ func handleAggregatorStart(args []string) error {
 	fmt.Printf("📊 Configuration:\n")
 	fmt.Printf("   Mode: %s\n", plan.Mode)
 	fmt.Printf("   Address: %s\n", plan.Aggregator.Address)
+	
+	// Display algorithm information
+	algorithmName := "fedavg" // default
+	if plan.Algorithm.Name != "" {
+		algorithmName = plan.Algorithm.Name
+	}
+	fmt.Printf("   Algorithm: %s\n", algorithmName)
+	
+	if len(plan.Algorithm.Hyperparameters) > 0 {
+		fmt.Printf("   Algorithm hyperparameters:\n")
+		for key, value := range plan.Algorithm.Hyperparameters {
+			fmt.Printf("     %s: %v\n", key, value)
+		}
+	}
 
 	if plan.Mode == federation.ModeSync {
 		fmt.Printf("   Rounds: %d\n", plan.Rounds)

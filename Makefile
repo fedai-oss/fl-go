@@ -209,6 +209,23 @@ validate-async: build ## Run asynchronous FL validation only
 	@echo "🔄 Running async FL validation..."
 	@./scripts/validate_fl_flows.sh async
 
+test-algorithms: ## Run algorithm-specific tests
+	@echo "🧪 Testing aggregation algorithms..."
+	@go test -v ./pkg/aggregator/... -run "Algorithm"
+	@echo "✅ Algorithm tests completed"
+
+demo-fedopt: build ## Run FedOpt algorithm demo
+	@echo "🚀 Running FedOpt algorithm demo..."
+	@$(BUILD_DIR)/$(BINARY_NAME) plan init --name fedopt_demo
+	@cp plans/fedopt_example_plan.yaml fedopt_demo/plan.yaml
+	@echo "📊 FedOpt demo workspace created - run 'cd fedopt_demo && fx aggregator start' to start"
+
+demo-fedprox: build ## Run FedProx algorithm demo
+	@echo "🚀 Running FedProx algorithm demo..."
+	@$(BUILD_DIR)/$(BINARY_NAME) plan init --name fedprox_demo
+	@cp plans/fedprox_example_plan.yaml fedprox_demo/plan.yaml
+	@echo "📊 FedProx demo workspace created - run 'cd fedprox_demo && fx aggregator start' to start"
+
 docker-compose-logs: ## Show Docker Compose logs
 	@echo "🐳 Showing Docker Compose logs..."
 	docker-compose logs -f

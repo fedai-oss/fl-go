@@ -1,0 +1,40 @@
+rounds: 10
+mode: "async"
+
+# FedOpt algorithm configuration for async mode
+algorithm:
+  name: "fedopt"
+  hyperparameters:
+    server_learning_rate: 0.8  # Lower for async stability
+    beta1: 0.9
+    beta2: 0.999
+    epsilon: 1e-7
+
+collaborators:
+  - id: "collaborator1"
+    address: "localhost:50052"
+  - id: "collaborator2"  
+    address: "localhost:50053"
+  - id: "collaborator3"
+    address: "localhost:50054"
+
+aggregator:
+  address: "localhost:50051"
+
+initial_model: "save/init_model.pt"
+output_model: "save/final_model.pt"
+
+tasks:
+  train:
+    script: "src/train.py"
+    args:
+      epochs: 2
+      learning_rate: 0.01
+      batch_size: 32
+
+# Async configuration for FedOpt
+async_config:
+  max_staleness: 15     # Allow slightly more staleness for adaptive algorithm
+  min_updates: 2        # Aggregate when at least 2 updates available
+  aggregation_delay: 3  # Check for aggregation every 3 seconds
+  staleness_weight: 0.7 # Higher weight to preserve more information

@@ -59,8 +59,21 @@ type AsyncFedAvgAggregator struct {
 	stopChan     chan struct{}
 }
 
-// NewAggregator creates the appropriate aggregator based on mode
+// NewAggregator creates the appropriate aggregator based on mode and algorithm
 func NewAggregator(plan *federation.FLPlan) Aggregator {
+	// Check if a specific algorithm is requested
+	if plan.Algorithm.Name != "" && plan.Algorithm.Name != "fedavg" {
+		// Use modular aggregator for advanced algorithms
+		modularAgg, err := NewModularAggregator(plan)
+		if err != nil {
+			log.Printf("Failed to create modular aggregator: %v, falling back to FedAvg", err)
+			// Fall back to default
+		} else {
+			return modularAgg
+		}
+	}
+	
+	// Default behavior: use legacy aggregators for FedAvg
 	switch plan.Mode {
 	case federation.ModeAsync:
 		return NewAsyncFedAvgAggregator(plan)

@@ -33,7 +33,9 @@ FL-Go provides the same CLI-driven workflow as the original OpenFL but with Go h
 - **Asynchronous Federated Learning**: Based on [Papaya paper](https://arxiv.org/abs/2111.04877) for scalable FL
 - **Mode Switching**: Easy switching between synchronous and asynchronous FL modes
 - **Staleness-Aware Aggregation**: Intelligent handling of stale updates in async mode
-- **Extensible Architecture**: Easy to add new aggregation algorithms
+- **Multiple Aggregation Algorithms**: Support for FedAvg, FedOpt, and FedProx algorithms
+- **Modular Algorithm Framework**: Easy to add new aggregation algorithms
+- **Hyperparameter Configuration**: Fine-tune algorithm behavior via YAML configuration
 
 ## Architecture
 
@@ -368,10 +370,52 @@ Apache License 2.0 - Same as original OpenFL
 3. Add tests for new functionality
 4. Submit a pull request
 
+## Aggregation Algorithms
+
+FL-GO supports multiple state-of-the-art aggregation algorithms that can be easily configured:
+
+### Supported Algorithms
+
+| Algorithm | Description | Use Case |
+|-----------|-------------|----------|
+| **FedAvg** | Vanilla federated averaging | Homogeneous environments, IID data |
+| **FedOpt** | Adaptive server optimization with Adam-like momentum | Heterogeneous clients, faster convergence |
+| **FedProx** | Proximal term for handling client heterogeneity | Non-IID data, unstable training environments |
+
+### Configuration Examples
+
+**FedOpt Algorithm:**
+```yaml
+algorithm:
+  name: "fedopt"
+  hyperparameters:
+    server_learning_rate: 1.0
+    beta1: 0.9
+    beta2: 0.999
+    epsilon: 1e-7
+```
+
+**FedProx Algorithm:**
+```yaml
+algorithm:
+  name: "fedprox"
+  hyperparameters:
+    mu: 0.01  # Proximal term coefficient
+```
+
+### Algorithm Selection Guidelines
+
+- **FedAvg**: Start here for baseline performance
+- **FedOpt**: Use when FedAvg converges slowly or in heterogeneous environments
+- **FedProx**: Choose for highly non-IID data or when training is unstable
+
+For comprehensive documentation on algorithms, hyperparameter tuning, and implementation details, see [Algorithm Guide](docs/ALGORITHMS.md).
+
 ## Roadmap
 
 - [ ] Add mTLS security
-- [ ] Implement additional aggregation algorithms (FedOpt, FedProx)
+- [x] **Implement additional aggregation algorithms (FedOpt, FedProx)** ✅
+- [ ] Add more algorithms (FedNova, SCAFFOLD, LAG)
 - [ ] Add TEE support
 - [ ] Web UI for monitoring
 - [ ] Integration with popular ML frameworks

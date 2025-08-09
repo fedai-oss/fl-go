@@ -1,0 +1,35 @@
+rounds: 5
+mode: "sync"
+
+# FedProx algorithm configuration
+algorithm:
+  name: "fedprox"
+  hyperparameters:
+    mu: 0.01  # Proximal term coefficient
+
+collaborators:
+  - id: "collaborator1"
+    address: "localhost:50052"
+  - id: "collaborator2"  
+    address: "localhost:50053"
+
+aggregator:
+  address: "localhost:50051"
+
+initial_model: "save/init_model.pt"
+output_model: "save/final_model.pt"
+
+tasks:
+  train:
+    script: "src/train.py"
+    args:
+      epochs: 3
+      learning_rate: 0.01
+      batch_size: 32
+
+# Async configuration (not used in sync mode but kept for reference)
+async_config:
+  max_staleness: 10
+  min_updates: 2
+  aggregation_delay: 5
+  staleness_weight: 0.5

@@ -11,6 +11,8 @@ type FLPlan struct {
 	// New fields for async FL support
 	Mode        FLMode      `yaml:"mode"`         // sync or async
 	AsyncConfig AsyncConfig `yaml:"async_config"` // async-specific settings
+	// New field for aggregation algorithm support
+	Algorithm AlgorithmConfig `yaml:"algorithm"` // aggregation algorithm configuration
 }
 
 type FLMode string
@@ -43,4 +45,9 @@ type TasksConfig struct {
 type TaskConfig struct {
 	Script string                 `yaml:"script"`
 	Args   map[string]interface{} `yaml:"args"`
+}
+
+type AlgorithmConfig struct {
+	Name            string                 `yaml:"name"`            // fedavg, fedopt, fedprox
+	Hyperparameters map[string]interface{} `yaml:"hyperparameters"` // algorithm-specific parameters
 }

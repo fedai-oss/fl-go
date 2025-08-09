@@ -1,6 +1,11 @@
 # Synchronous Federated Learning Configuration
 mode: "sync"  # Options: "sync" or "async"
 rounds: 3
+
+# Algorithm configuration (optional - defaults to fedavg)
+algorithm:
+  name: "fedavg"
+  hyperparameters: {}
 collaborators:
   - id: "collab1"
     address: "localhost:50052"
