@@ -1,5 +1,31 @@
 # FL-Go
 
+<!-- Badges -->
+<div align="center">
+
+[![CI Status](https://github.com/fedai-oss/fl-go/workflows/FL-GO%20CI%20Pipeline/badge.svg)](https://github.com/fedai-oss/fl-go/actions/workflows/ci.yml)
+[![Security](https://github.com/fedai-oss/fl-go/workflows/CodeQL%20Security%20Analysis/badge.svg)](https://github.com/fedai-oss/fl-go/actions/workflows/codeql.yml)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/fedai-oss/fl-go?color=blue&logo=go)](https://golang.org/dl/)
+[![License](https://img.shields.io/github/license/fedai-oss/fl-go?color=green)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/fedai-oss/fl-go?include_prereleases&sort=semver)](https://github.com/fedai-oss/fl-go/releases)
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/fedai-oss/fl-go?logo=docker)](https://hub.docker.com/r/fedai-oss/fl-go)
+[![Docker Image Size](https://img.shields.io/docker/image-size/fedai-oss/fl-go?logo=docker)](https://hub.docker.com/r/fedai-oss/fl-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/fedai-oss/fl-go)](https://goreportcard.com/report/github.com/fedai-oss/fl-go)
+[![Coverage](https://codecov.io/gh/fedai-oss/fl-go/branch/main/graph/badge.svg)](https://codecov.io/gh/fedai-oss/fl-go)
+
+[![Contributors](https://img.shields.io/github/contributors/fedai-oss/fl-go?color=orange)](https://github.com/fedai-oss/fl-go/graphs/contributors)
+[![Stars](https://img.shields.io/github/stars/fedai-oss/fl-go?style=social)](https://github.com/fedai-oss/fl-go/stargazers)
+[![Forks](https://img.shields.io/github/forks/fedai-oss/fl-go?style=social)](https://github.com/fedai-oss/fl-go/network/members)
+[![Issues](https://img.shields.io/github/issues/fedai-oss/fl-go)](https://github.com/fedai-oss/fl-go/issues)
+
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/fedai-oss/fl-go/badge)](https://securityscorecards.dev/viewer/?uri=github.com/fedai-oss/fl-go)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffedai-oss%2Ffl-go.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffedai-oss%2Ffl-go?ref=badge_shield)
+
+</div>
+
+---
+
 A Go implementation of [OpenFL](https://github.com/securefederatedai/openfl) - An Open Framework for Federated Learning.
 
 FL-Go provides the same CLI-driven workflow as the original OpenFL but with Go handling the orchestration and coordination while delegating ML operations to Python scripts.

@@ -54,7 +54,7 @@ func handlePlanInit(args []string) error {
 	fmt.Printf("🔄 Initializing FL workspace: %s\n", planName)
 
 	// Create workspace directory
-	if err := os.MkdirAll(planName, 0755); err != nil {
+	if err := os.MkdirAll(planName, 0750); err != nil {
 		return fmt.Errorf("failed to create workspace directory: %v", err)
 	}
 
@@ -68,7 +68,7 @@ func handlePlanInit(args []string) error {
 	}
 
 	for _, dir := range dirs {
-		if err := os.MkdirAll(filepath.Join(planName, dir), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(planName, dir), 0750); err != nil {
 			return fmt.Errorf("failed to create directory %s: %v", dir, err)
 		}
 	}
@@ -233,14 +233,14 @@ def main():
 if __name__ == "__main__":
     main()
 `
-	return os.WriteFile(path, []byte(script), 0755)
+	return os.WriteFile(path, []byte(script), 0600) // Changed from 0700 to meet security requirements
 }
 
 func createInitialModel(workspacePath string) error {
 	modelPath := filepath.Join(workspacePath, "save", "init_model.pt")
 
 	// Create save directory
-	if err := os.MkdirAll(filepath.Dir(modelPath), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(modelPath), 0750); err != nil {
 		return err
 	}
 
@@ -261,7 +261,7 @@ func createInitialModel(workspacePath string) error {
 		buf[i*4+3] = byte(bits >> 24)
 	}
 
-	return os.WriteFile(modelPath, buf, 0644)
+	return os.WriteFile(modelPath, buf, 0600)
 }
 
 func handlePlanValidate(args []string) error {

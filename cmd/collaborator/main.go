@@ -18,7 +18,16 @@ func main() {
 		log.Fatal(err)
 	}
 	c := collaborator.NewCollaborator(pl, *id)
-	c.Connect()
-	update, _ := c.RunTrainTask(pl.Tasks.Train)
-	c.SubmitUpdate(update)
+	if err := c.Connect(); err != nil {
+		log.Fatalf("Failed to connect to aggregator: %v", err)
+	}
+
+	update, err := c.RunTrainTask(pl.Tasks.Train)
+	if err != nil {
+		log.Fatalf("Failed to run training task: %v", err)
+	}
+
+	if err := c.SubmitUpdate(update); err != nil {
+		log.Fatalf("Failed to submit update: %v", err)
+	}
 }

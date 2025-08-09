@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -38,23 +39,28 @@ func (c *SimpleCollaborator) Connect() error {
 	}
 
 	// Create models directory if it doesn't exist
-	if err := os.MkdirAll("models", 0755); err != nil {
+	if err := os.MkdirAll("models", 0750); err != nil {
 		return err
 	}
 
-	return os.WriteFile("models/model_init.pt", resp.InitialModel, 0644)
+	return os.WriteFile("models/model_init.pt", resp.InitialModel, 0600)
 }
 
 func (c *SimpleCollaborator) RunTrainTask(task federation.TaskConfig) ([]byte, error) {
 	args := []string{task.Script, "--model-in", "models/model_init.pt", "--model-out", "models/update.pt"}
 	for k, v := range task.Args {
+		// Validate key and value to prevent injection
+		if !isValidArgument(k) || !isValidArgument(fmt.Sprint(v)) {
+			return nil, fmt.Errorf("invalid argument detected: key=%s, value=%v", k, v)
+		}
+
 		// Convert snake_case to kebab-case for Python argparse
 		kebabKey := strings.ReplaceAll(k, "_", "-")
 		args = append(args, fmt.Sprintf("--%s", kebabKey), fmt.Sprint(v))
 	}
 
 	log.Printf("Running training task: python3 %v", args)
-	cmd := exec.Command("python3", args...)
+	cmd := exec.Command("python3", args...) // #nosec G204 - Arguments validated with whitelist above
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -139,7 +145,7 @@ func (c *SimpleCollaborator) RunAsyncMode(task federation.TaskConfig) error {
 			log.Printf("Warning: failed to get latest model: %v", err)
 		} else {
 			// Update the local model with the latest from aggregator
-			if err := os.WriteFile("models/model_init.pt", latestModel, 0644); err != nil {
+			if err := os.WriteFile("models/model_init.pt", latestModel, 0600); err != nil {
 				log.Printf("Warning: failed to save latest model: %v", err)
 			} else {
 				log.Printf("Updated local model with latest from aggregator")
@@ -176,4 +182,12 @@ func (c *SimpleCollaborator) Run(task federation.TaskConfig) error {
 	default:
 		return c.RunSyncMode(task)
 	}
+}
+
+// isValidArgument validates command line arguments to prevent injection attacks
+func isValidArgument(arg string) bool {
+	// Allow alphanumeric characters, dots, slashes, dashes, underscores, and equals
+	// This is a whitelist approach for security
+	validPattern := regexp.MustCompile(`^[a-zA-Z0-9._/\-=]+$`)
+	return validPattern.MatchString(arg) && len(arg) < 256 // Also limit length
 }

@@ -162,7 +162,7 @@ func (a *FedAvgAggregator) Start(ctx context.Context) error {
 			outputPath = fmt.Sprintf("save/round_%d_model.pt", round)
 		}
 
-		if err := os.WriteFile(outputPath, buf, 0644); err != nil {
+		if err := os.WriteFile(outputPath, buf, 0600); err != nil {
 			return err
 		}
 		log.Printf("Round %d complete, model saved to %s", round, outputPath)
@@ -205,9 +205,18 @@ func (a *FedAvgAggregator) GetLatestModel(ctx context.Context, req *pb.GetModelR
 		return nil, fmt.Errorf("failed to read initial model: %v", err)
 	}
 
+	// Safely convert int to int32 to prevent overflow
+	var currentRound int32
+	if a.currentRound > math.MaxInt32 {
+		log.Printf("Warning: current round %d exceeds int32 max, capping at %d", a.currentRound, math.MaxInt32)
+		currentRound = math.MaxInt32
+	} else {
+		currentRound = int32(a.currentRound) // #nosec G115 - Safe conversion with bounds check above
+	}
+
 	return &pb.GetModelResponse{
 		ModelWeights: data,
-		CurrentRound: int32(a.currentRound),
+		CurrentRound: currentRound,
 	}, nil
 }
 
@@ -339,7 +348,7 @@ func (a *AsyncFedAvgAggregator) performAsyncAggregation() {
 	}
 
 	outputPath := fmt.Sprintf("save/async_round_%d_model.pt", a.currentRound)
-	if err := os.WriteFile(outputPath, buf, 0644); err != nil {
+	if err := os.WriteFile(outputPath, buf, 0600); err != nil {
 		log.Printf("Error saving async model: %v", err)
 	} else {
 		log.Printf("Async round %d complete, model saved to %s", a.currentRound, outputPath)
@@ -395,8 +404,17 @@ func (a *AsyncFedAvgAggregator) GetLatestModel(ctx context.Context, req *pb.GetM
 
 	log.Printf("Providing latest model to %s (round %d)", req.CollaboratorId, a.currentRound)
 
+	// Safely convert int to int32 to prevent overflow
+	var currentRound int32
+	if a.currentRound > math.MaxInt32 {
+		log.Printf("Warning: current round %d exceeds int32 max, capping at %d", a.currentRound, math.MaxInt32)
+		currentRound = math.MaxInt32
+	} else {
+		currentRound = int32(a.currentRound) // #nosec G115 - Safe conversion with bounds check above
+	}
+
 	return &pb.GetModelResponse{
 		ModelWeights: buf,
-		CurrentRound: int32(a.currentRound),
+		CurrentRound: currentRound,
 	}, nil
 }
