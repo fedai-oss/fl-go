@@ -185,7 +185,7 @@ jobs:
         gosec -fmt sarif -out gosec.sarif -exclude=G103,G104 -exclude-dir=api ./...
 
     - name: Upload SARIF file
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: gosec.sarif
 
