@@ -27,7 +27,7 @@ func NewCollaborator(plan *federation.FLPlan, id string) *SimpleCollaborator {
 
 func (c *SimpleCollaborator) Connect() error {
 	log.Printf("Connecting to aggregator at %s", c.plan.Aggregator.Address)
-	conn, err := grpc.Dial(c.plan.Aggregator.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(c.plan.Aggregator.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
 	}

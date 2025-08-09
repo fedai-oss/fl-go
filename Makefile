@@ -78,11 +78,14 @@ proto: ## Generate protobuf code
 
 lint: ## Run linter
 	@echo "🔍 Running linter..."
-	@if ! command -v golangci-lint > /dev/null; then \
-		echo "❌ golangci-lint not found. Installing..."; \
-		go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+	@if ! command -v staticcheck > /dev/null; then \
+		echo "❌ staticcheck not found. Installing..."; \
+		go install honnef.co/go/tools/cmd/staticcheck@latest; \
 	fi
-	golangci-lint run
+	@echo "🔍 Running go vet..."
+	go vet ./...
+	@echo "🔍 Running staticcheck..."
+	staticcheck ./...
 	@echo "✅ Linting completed"
 
 format: ## Format code

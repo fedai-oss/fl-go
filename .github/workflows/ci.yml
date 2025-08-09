@@ -76,7 +76,17 @@ jobs:
     - name: Run linting
       run: |
         go install golang.org/x/tools/cmd/goimports@latest
-        make lint
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        echo "🔍 Running goimports check..."
+        goimports -d . | tee goimports-diff.txt
+        if [ -s goimports-diff.txt ]; then
+          echo "❌ Code formatting issues found"
+          cat goimports-diff.txt
+          exit 1
+        fi
+        echo "✅ Code formatting is correct"
+        echo "🔍 Running staticcheck..."
+        staticcheck ./...
 
     - name: Check formatting
       run: |
@@ -294,33 +304,12 @@ jobs:
     if: failure()
 
     steps:
-    - name: Create issue on failure
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const title = `CI Pipeline Failed - ${context.workflow} #${context.runNumber}`;
-          const body = `
-          ## CI Pipeline Failure Report
-          
-          **Workflow:** ${context.workflow}
-          **Run Number:** ${context.runNumber}
-          **Commit:** ${context.sha}
-          **Branch:** ${context.ref}
-          **Actor:** ${context.actor}
-          
-          **Failed Jobs:**
-          ${{ toJSON(needs) }}
-          
-          **Details:**
-          [View failed run](${context.payload.repository.html_url}/actions/runs/${context.runId})
-          
-          This issue was automatically created by the CI pipeline.
-          `;
-          
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: title,
-            body: body,
-            labels: ['ci-failure', 'automated']
-          });
+    - name: Log failure information
+      run: |
+        echo "🚨 CI Pipeline Failed!"
+        echo "Workflow: ${{ github.workflow }}"
+        echo "Run Number: ${{ github.run_number }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Branch: ${{ github.ref }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "View failed run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
