@@ -129,6 +129,24 @@ fx collaborator start collaborator1
 fx collaborator start collaborator2
 ```
 
+## Validation
+
+To quickly validate that FL-GO is working correctly:
+
+```bash
+# Run comprehensive validation (tests both sync and async modes)
+./scripts/validate_fl_flows.sh
+```
+
+This automated script will:
+- ✅ Test synchronous FL with round-based training
+- ✅ Test asynchronous FL with continuous training  
+- ✅ Validate model aggregation and distribution
+- ✅ Check gRPC communication
+- ✅ Parse logs and report results
+
+For detailed validation procedures, troubleshooting, and custom testing, see the **[Validation Guide](docs/VALIDATION.md)**.
+
 ## CLI Commands
 
 ### Plan Management
@@ -252,6 +270,24 @@ make test-race
 # Run tests with coverage
 make test-coverage
 ```
+
+### FL Validation
+
+FL-GO includes comprehensive validation scripts to test both sync and async FL flows:
+
+```bash
+# Run comprehensive FL validation (recommended)
+./scripts/validate_fl_flows.sh
+
+# This validates:
+# ✅ Synchronous FL with round-based training
+# ✅ Asynchronous FL with continuous training
+# ✅ Model aggregation and distribution
+# ✅ gRPC communication
+# ✅ Log parsing and result validation
+```
+
+For detailed validation procedures, troubleshooting, and custom testing scenarios, see the **[Validation Guide](docs/VALIDATION.md)**.
 
 ### Docker Support
 

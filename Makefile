@@ -1,7 +1,7 @@
 # FL-Go Makefile
 # A Go implementation of OpenFL - An Open Framework for Federated Learning
 
-.PHONY: help build clean test run-aggregator run-collaborator run-demo workspace-init workspace-clean deps proto lint format docker-build docker-run
+.PHONY: help build clean test run-aggregator run-collaborator run-demo workspace-init workspace-clean deps proto lint format docker-build docker-run validate validate-sync validate-async
 
 # Variables
 BINARY_NAME=fx
@@ -19,6 +19,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "Examples:"
 	@echo "  make build                    # Build the fx binary"
+	@echo "  make validate                 # Run comprehensive FL validation"
 	@echo "  make workspace-init           # Initialize a new FL workspace"
 	@echo "  make run-demo                 # Run a complete FL demo"
 	@echo "  make clean                    # Clean build artifacts"
@@ -194,6 +195,22 @@ docker-compose-up: ## Start FL-Go with Docker Compose
 docker-compose-down: ## Stop Docker Compose services
 	@echo "🐳 Stopping Docker Compose services..."
 	docker-compose down
+
+# =============================================================================
+# Validation Commands
+# =============================================================================
+
+validate: build ## Run comprehensive FL validation (sync + async)
+	@echo "🧪 Running comprehensive FL validation..."
+	@./scripts/validate_fl_flows.sh
+
+validate-sync: build ## Run synchronous FL validation only
+	@echo "🔄 Running sync FL validation..."
+	@./scripts/validate_fl_flows.sh sync
+
+validate-async: build ## Run asynchronous FL validation only  
+	@echo "🔄 Running async FL validation..."
+	@./scripts/validate_fl_flows.sh async
 
 docker-compose-logs: ## Show Docker Compose logs
 	@echo "🐳 Showing Docker Compose logs..."
