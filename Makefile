@@ -45,19 +45,38 @@ test:
 test-monitoring:
 	go test ./pkg/monitoring/...
 
-# Clean build artifacts
-clean:
-	rm -rf bin/
-	rm -f *.log
-	cd web && rm -rf dist/ node_modules/
-
 # Format Go code
 fmt:
 	go fmt ./...
 
+# Format code with goimports
+format: fmt
+	@command -v goimports >/dev/null 2>&1 || { echo "Installing goimports..."; go install golang.org/x/tools/cmd/goimports@latest; }
+	@command -v goimports >/dev/null 2>&1 && goimports -w . || $(HOME)/go/bin/goimports -w .
+
 # Lint Go code
 lint:
+	@command -v golangci-lint >/dev/null 2>&1 || { echo "Installing golangci-lint..."; go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; }
 	golangci-lint run
+
+# Test with race detection
+test-race:
+	go test -race ./...
+
+# Test with coverage
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+
+# Validate the FL flows
+validate:
+	./scripts/validate_fl_flows.sh
+
+# Clean build artifacts
+clean:
+	rm -rf bin/
+	rm -f *.log *.out coverage.html fx
+	cd web && rm -rf dist/ node_modules/
 
 # Generate protobuf files (if needed)
 proto:
