@@ -19,17 +19,17 @@ import (
 // ModularAggregator implements a flexible aggregator that can use different algorithms
 type ModularAggregator struct {
 	pb.UnimplementedFederatedLearningServer
-	plan              *federation.FLPlan
-	algorithm         AggregationAlgorithm
-	mu                sync.Mutex
-	updates           []ClientUpdate
-	modelSize         int
-	currentRound      int
-	srv               *grpc.Server
-	globalModel       []float32
-	lastUpdate        time.Time
-	stopChan          chan struct{}
-	isAsync           bool
+	plan         *federation.FLPlan
+	algorithm    AggregationAlgorithm
+	mu           sync.Mutex
+	updates      []ClientUpdate
+	modelSize    int
+	currentRound int
+	srv          *grpc.Server
+	globalModel  []float32
+	lastUpdate   time.Time
+	stopChan     chan struct{}
+	isAsync      bool
 }
 
 // NewModularAggregator creates a new modular aggregator with the specified algorithm
@@ -63,17 +63,17 @@ func NewModularAggregator(plan *federation.FLPlan) (*ModularAggregator, error) {
 }
 
 func (a *ModularAggregator) Start(ctx context.Context) error {
-	log.Printf("Starting Modular Aggregator with %s algorithm in %s mode", 
+	log.Printf("Starting Modular Aggregator with %s algorithm in %s mode",
 		a.algorithm.GetName(), a.plan.Mode)
-		
+
 	// Initialize the algorithm
 	algConfig := AlgorithmConfig{
 		AlgorithmName:   a.plan.Algorithm.Name,
 		ModelSize:       a.modelSize,
 		Hyperparameters: a.plan.Algorithm.Hyperparameters,
-		Mode:           a.plan.Mode,
+		Mode:            a.plan.Mode,
 	}
-	
+
 	if err := a.algorithm.Initialize(algConfig); err != nil {
 		return fmt.Errorf("failed to initialize algorithm: %v", err)
 	}
@@ -131,18 +131,18 @@ func (a *ModularAggregator) loadInitialModel() error {
 	// Determine model size from file
 	a.modelSize = len(data) / 4 // 4 bytes per float32
 	a.globalModel = make([]float32, a.modelSize)
-	
+
 	// Load initial weights
 	for i := 0; i < a.modelSize; i++ {
 		a.globalModel[i] = math.Float32frombits(binary.LittleEndian.Uint32(data[i*4:]))
 	}
-	
+
 	log.Printf("Loaded initial model with %d parameters", a.modelSize)
 	return nil
 }
 
 func (a *ModularAggregator) runSyncFederation(ctx context.Context) error {
-	log.Printf("Running synchronous federation with %s for %d rounds", 
+	log.Printf("Running synchronous federation with %s for %d rounds",
 		a.algorithm.GetName(), a.plan.Rounds)
 
 	// Run federated learning for specified rounds
@@ -176,7 +176,7 @@ func (a *ModularAggregator) runSyncFederation(ctx context.Context) error {
 		a.mu.Lock()
 		newModel, err := a.algorithm.Aggregate(a.updates, a.globalModel)
 		a.mu.Unlock()
-		
+
 		if err != nil {
 			return fmt.Errorf("aggregation failed in round %d: %v", round, err)
 		}
@@ -188,7 +188,7 @@ func (a *ModularAggregator) runSyncFederation(ctx context.Context) error {
 		if err := a.saveModel(round); err != nil {
 			return fmt.Errorf("failed to save model in round %d: %v", round, err)
 		}
-		
+
 		log.Printf("Round %d complete using %s algorithm", round, a.algorithm.GetName())
 	}
 
@@ -222,7 +222,7 @@ func (a *ModularAggregator) asyncAggregationLoop() {
 			a.mu.Lock()
 			updateCount := len(a.updates)
 			a.mu.Unlock()
-			
+
 			if updateCount >= a.plan.AsyncConfig.MinUpdates {
 				a.performAsyncAggregation()
 			}
@@ -240,17 +240,17 @@ func (a *ModularAggregator) performAsyncAggregation() {
 		return
 	}
 
-	log.Printf("Performing async aggregation with %d updates using %s", 
+	log.Printf("Performing async aggregation with %d updates using %s",
 		len(a.updates), a.algorithm.GetName())
 
 	// Calculate staleness for each update
 	currentTime := time.Now()
 	validUpdates := make([]ClientUpdate, 0)
-	
+
 	for _, update := range a.updates {
 		staleness := int(currentTime.Sub(update.Timestamp).Seconds())
 		update.Staleness = staleness
-		
+
 		if staleness <= a.plan.AsyncConfig.MaxStaleness {
 			validUpdates = append(validUpdates, update)
 		} else {
@@ -280,7 +280,7 @@ func (a *ModularAggregator) performAsyncAggregation() {
 	if err := a.saveAsyncModel(); err != nil {
 		log.Printf("Failed to save async model: %v", err)
 	} else {
-		log.Printf("Async round %d complete using %s, model saved", 
+		log.Printf("Async round %d complete using %s, model saved",
 			a.currentRound, a.algorithm.GetName())
 	}
 
@@ -302,7 +302,7 @@ func (a *ModularAggregator) saveModel(round int) error {
 	if err := os.WriteFile(outputPath, buf, 0600); err != nil {
 		return err
 	}
-	
+
 	log.Printf("Model saved to %s", outputPath)
 	return nil
 }
@@ -313,7 +313,7 @@ func (a *ModularAggregator) saveAsyncModel() error {
 		binary.LittleEndian.PutUint32(buf[i*4:], math.Float32bits(v))
 	}
 
-	outputPath := fmt.Sprintf("save/async_%s_round_%d_model.pt", 
+	outputPath := fmt.Sprintf("save/async_%s_round_%d_model.pt",
 		a.algorithm.GetName(), a.currentRound)
 	return os.WriteFile(outputPath, buf, 0600)
 }
@@ -321,7 +321,7 @@ func (a *ModularAggregator) saveAsyncModel() error {
 // gRPC service implementations
 
 func (a *ModularAggregator) JoinFederation(ctx context.Context, req *pb.JoinRequest) (*pb.JoinResponse, error) {
-	log.Printf("Collaborator %s joining %s federation with %s algorithm", 
+	log.Printf("Collaborator %s joining %s federation with %s algorithm",
 		req.CollaboratorId, a.plan.Mode, a.algorithm.GetName())
 
 	// Return current global model
@@ -344,7 +344,7 @@ func (a *ModularAggregator) SubmitUpdate(ctx context.Context, upd *pb.ModelUpdat
 		Weights:        floats,
 		Timestamp:      time.Now(),
 		Round:          a.currentRound,
-		NumSamples:     100, // Default value - could be passed from client
+		NumSamples:     100,  // Default value - could be passed from client
 		LearningRate:   0.01, // Default value - could be passed from client
 	}
 
@@ -357,10 +357,10 @@ func (a *ModularAggregator) SubmitUpdate(ctx context.Context, upd *pb.ModelUpdat
 	if a.isAsync {
 		mode = "async"
 	}
-	
-	log.Printf("Received %s update %d from %s (round %d) for %s algorithm", 
+
+	log.Printf("Received %s update %d from %s (round %d) for %s algorithm",
 		mode, updateCount, upd.CollaboratorId, a.currentRound, a.algorithm.GetName())
-	
+
 	return &pb.Ack{Success: true}, nil
 }
 
@@ -374,7 +374,7 @@ func (a *ModularAggregator) GetLatestModel(ctx context.Context, req *pb.GetModel
 		binary.LittleEndian.PutUint32(buf[i*4:], math.Float32bits(v))
 	}
 
-	log.Printf("Providing latest %s model to %s (round %d)", 
+	log.Printf("Providing latest %s model to %s (round %d)",
 		a.algorithm.GetName(), req.CollaboratorId, a.currentRound)
 
 	// Safely convert int to int32 to prevent overflow

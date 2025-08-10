@@ -38,3 +38,4 @@ async_config:
   min_updates: 2        # Aggregate when at least 2 updates available
   aggregation_delay: 3  # Check for aggregation every 3 seconds
   staleness_weight: 0.7 # Higher weight to preserve more information
+

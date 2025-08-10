@@ -72,7 +72,7 @@ func NewAggregator(plan *federation.FLPlan) Aggregator {
 			return modularAgg
 		}
 	}
-	
+
 	// Default behavior: use legacy aggregators for FedAvg
 	switch plan.Mode {
 	case federation.ModeAsync:

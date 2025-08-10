@@ -12,16 +12,16 @@ import (
 type AggregationAlgorithm interface {
 	// Initialize sets up the algorithm with configuration
 	Initialize(config AlgorithmConfig) error
-	
+
 	// Aggregate performs the aggregation of client updates
 	Aggregate(updates []ClientUpdate, globalModel []float32) ([]float32, error)
-	
+
 	// GetName returns the algorithm name
 	GetName() string
-	
+
 	// GetHyperparameters returns algorithm-specific hyperparameters
 	GetHyperparameters() map[string]interface{}
-	
+
 	// UpdateHyperparameters allows dynamic updates to hyperparameters
 	UpdateHyperparameters(params map[string]interface{}) error
 }
@@ -39,10 +39,10 @@ type ClientUpdate struct {
 
 // AlgorithmConfig contains configuration for aggregation algorithms
 type AlgorithmConfig struct {
-	AlgorithmName  string                 `yaml:"algorithm"`    // fedavg, fedopt, fedprox
-	ModelSize      int                    `yaml:"model_size"`
+	AlgorithmName   string                 `yaml:"algorithm"` // fedavg, fedopt, fedprox
+	ModelSize       int                    `yaml:"model_size"`
 	Hyperparameters map[string]interface{} `yaml:"hyperparameters"`
-	Mode           federation.FLMode      `yaml:"mode"` // sync or async
+	Mode            federation.FLMode      `yaml:"mode"` // sync or async
 }
 
 // AlgorithmType represents supported aggregation algorithms
@@ -89,7 +89,7 @@ func (f *FedAvgAlgorithm) GetName() string {
 
 func (f *FedAvgAlgorithm) GetHyperparameters() map[string]interface{} {
 	return map[string]interface{}{
-		"algorithm": "fedavg",
+		"algorithm":   "fedavg",
 		"description": "Vanilla Federated Averaging",
 	}
 }
@@ -136,32 +136,32 @@ func (f *FedAvgAlgorithm) Aggregate(updates []ClientUpdate, globalModel []float3
 // =============================================================================
 
 type FedOptAlgorithm struct {
-	name           string
-	modelSize      int
-	serverLR       float32
-	beta1          float32
-	beta2          float32
-	epsilon        float32
-	momentum       []float32  // First moment estimate
-	velocity       []float32  // Second moment estimate  
-	round          int
+	name      string
+	modelSize int
+	serverLR  float32
+	beta1     float32
+	beta2     float32
+	epsilon   float32
+	momentum  []float32 // First moment estimate
+	velocity  []float32 // Second moment estimate
+	round     int
 }
 
 func (f *FedOptAlgorithm) Initialize(config AlgorithmConfig) error {
 	f.name = "FedOpt"
 	f.modelSize = config.ModelSize
-	
+
 	// Default hyperparameters
 	f.serverLR = 1.0
 	f.beta1 = 0.9
 	f.beta2 = 0.999
 	f.epsilon = 1e-7
 	f.round = 0
-	
+
 	// Initialize server optimizer state
 	f.momentum = make([]float32, f.modelSize)
 	f.velocity = make([]float32, f.modelSize)
-	
+
 	// Override with custom hyperparameters if provided
 	if params := config.Hyperparameters; params != nil {
 		if lr, ok := params["server_learning_rate"].(float64); ok {
@@ -177,7 +177,7 @@ func (f *FedOptAlgorithm) Initialize(config AlgorithmConfig) error {
 			f.epsilon = float32(eps)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -189,10 +189,10 @@ func (f *FedOptAlgorithm) GetHyperparameters() map[string]interface{} {
 	return map[string]interface{}{
 		"algorithm":            "fedopt",
 		"server_learning_rate": f.serverLR,
-		"beta1":               f.beta1,
-		"beta2":               f.beta2,
-		"epsilon":             f.epsilon,
-		"description":         "Adaptive Server Optimization (Adam-like)",
+		"beta1":                f.beta1,
+		"beta2":                f.beta2,
+		"epsilon":              f.epsilon,
+		"description":          "Adaptive Server Optimization (Adam-like)",
 	}
 }
 
@@ -218,7 +218,7 @@ func (f *FedOptAlgorithm) Aggregate(updates []ClientUpdate, globalModel []float3
 	}
 
 	f.round++
-	
+
 	// First, compute the pseudo-gradient (difference from global model)
 	pseudoGradient := make([]float32, f.modelSize)
 	totalSamples := 0
@@ -255,14 +255,14 @@ func (f *FedOptAlgorithm) Aggregate(updates []ClientUpdate, globalModel []float3
 	for i := 0; i < f.modelSize; i++ {
 		// Update momentum (first moment estimate)
 		f.momentum[i] = f.beta1*f.momentum[i] + (1-f.beta1)*pseudoGradient[i]
-		
+
 		// Update velocity (second moment estimate)
 		f.velocity[i] = f.beta2*f.velocity[i] + (1-f.beta2)*pseudoGradient[i]*pseudoGradient[i]
-		
+
 		// Bias correction
 		momentumCorrected := f.momentum[i] / (1 - float32(math.Pow(float64(f.beta1), float64(f.round))))
 		velocityCorrected := f.velocity[i] / (1 - float32(math.Pow(float64(f.beta2), float64(f.round))))
-		
+
 		// Apply Adam update
 		if i < len(newModel) {
 			newModel[i] += f.serverLR * momentumCorrected / (float32(math.Sqrt(float64(velocityCorrected))) + f.epsilon)
@@ -287,14 +287,14 @@ func (f *FedProxAlgorithm) Initialize(config AlgorithmConfig) error {
 	f.name = "FedProx"
 	f.modelSize = config.ModelSize
 	f.mu = 0.01 // Default proximal term
-	
+
 	// Override with custom hyperparameters if provided
 	if params := config.Hyperparameters; params != nil {
 		if mu, ok := params["mu"].(float64); ok {
 			f.mu = float32(mu)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -305,7 +305,7 @@ func (f *FedProxAlgorithm) GetName() string {
 func (f *FedProxAlgorithm) GetHyperparameters() map[string]interface{} {
 	return map[string]interface{}{
 		"algorithm":   "fedprox",
-		"mu":         f.mu,
+		"mu":          f.mu,
 		"description": "Federated Optimization with Proximal Term",
 	}
 }
@@ -361,3 +361,4 @@ func (f *FedProxAlgorithm) Aggregate(updates []ClientUpdate, globalModel []float
 
 	return proximalBlend, nil
 }
+
