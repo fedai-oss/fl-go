@@ -1,6 +1,6 @@
 # Synchronous Federated Learning Configuration
 mode: "sync"  # Options: "sync" or "async"
-rounds: 3
+rounds: 2
 
 # Algorithm configuration (optional - defaults to fedavg)
 algorithm:
