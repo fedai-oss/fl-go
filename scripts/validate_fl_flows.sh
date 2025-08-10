@@ -254,7 +254,7 @@ main() {
     # Update sync plan
     cat > plan.yaml << 'EOF'
 mode: "sync"
-rounds: 3
+rounds: 2
 collaborators:
   - id: "collaborator1"
     address: "localhost:50052"
