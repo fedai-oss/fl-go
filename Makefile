@@ -9,6 +9,7 @@ build:
 	go build -o bin/$(BINARY_NAME) cmd/aggregator/main.go
 	go build -o bin/fl-collaborator cmd/collaborator/main.go
 	go build -o bin/$(MONITOR_BINARY) cmd/monitor/main.go
+	go build -o fx cmd/fx/main.go
 
 # Build monitoring server only
 build-monitor:

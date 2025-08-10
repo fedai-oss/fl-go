@@ -5,13 +5,14 @@ This mimics what would typically be a PyTorch or TensorFlow model.
 """
 import struct
 import os
+import argparse
 
 def create_initial_model(model_path: str, num_params: int = 10):
     """Create a simple binary model file with float32 weights."""
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     
-    # Simple initialization: small random-like values
-    weights = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    # Simple initialization: small random-like values scaled by num_params
+    weights = [0.1 * (i + 1) for i in range(num_params)]
     
     with open(model_path, 'wb') as f:
         for weight in weights:
@@ -21,4 +22,11 @@ def create_initial_model(model_path: str, num_params: int = 10):
     print(f"Model size: {len(weights)} parameters ({len(weights) * 4} bytes)")
 
 if __name__ == "__main__":
-    create_initial_model("models/init_model.pt")
+    parser = argparse.ArgumentParser(description="Create a simple initial model for federated learning")
+    parser.add_argument("--output", "-o", default="models/init_model.pt", 
+                        help="Output path for the model file")
+    parser.add_argument("--size", "-s", type=int, default=10,
+                        help="Number of parameters in the model")
+    
+    args = parser.parse_args()
+    create_initial_model(args.output, args.size)
