@@ -361,4 +361,3 @@ func (f *FedProxAlgorithm) Aggregate(updates []ClientUpdate, globalModel []float
 
 	return proximalBlend, nil
 }
-
