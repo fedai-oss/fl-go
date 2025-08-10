@@ -1,28 +1,28 @@
-# Binaries for programs and plugins
+# FL-Go Monitoring Stack .gitignore
+
+# Binaries
+bin/
+monitor
+fl-monitor
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-fx
 
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Output of the go coverage tool
 *.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
 
 # Go workspace file
 go.work
 
-# Build directories
-build/
-dist/
+# Dependency directories (remove the comment below to include it)
+# vendor/
 
-# IDE and editor files
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -38,69 +38,40 @@ dist/
 ehthumbs.db
 Thumbs.db
 
-# Log files
+# Logs
 *.log
-logs/
+*.logs
 
-# Temporary directories
-test_*/
-temp_*/
-demo_*/
-*_test/
-*_workspace/
+# Web UI dependencies and build artifacts
+web/node_modules/
+web/dist/
+web/.vite/
+web/coverage/
+
+# Monitoring data
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration overrides
+monitoring_config.local.yaml
+*.local.yaml
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
 
 # Model files (can be large)
 *.pt
 *.pth
-*.ckpt
 *.h5
-*.pb
-
-# Data directories
-data/
+models/
 save/
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Coverage reports
-coverage.out
-coverage.html
-
-# Protobuf generated files (if you want to exclude them)
-# *.pb.go
-# *_grpc.pb.go
-
-# Python cache
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# Docker
-.dockerignore
-
-# Kubernetes
-*.kubeconfig
-
-# Terraform
-*.tfstate
-*.tfstate.*
-.terraform/
-
-# Local development
-.local/
+# FL workspace files
+fl_workspace/
+workspace/
+validation_test/
+sync_test_workspace/
