@@ -13,6 +13,8 @@ type FLPlan struct {
 	AsyncConfig AsyncConfig `yaml:"async_config"` // async-specific settings
 	// New field for aggregation algorithm support
 	Algorithm AlgorithmConfig `yaml:"algorithm"` // aggregation algorithm configuration
+	// Monitoring configuration
+	Monitoring MonitoringConfig `yaml:"monitoring"` // monitoring configuration
 }
 
 type FLMode string
@@ -50,4 +52,13 @@ type TaskConfig struct {
 type AlgorithmConfig struct {
 	Name            string                 `yaml:"name"`            // fedavg, fedopt, fedprox
 	Hyperparameters map[string]interface{} `yaml:"hyperparameters"` // algorithm-specific parameters
+}
+
+// MonitoringConfig contains monitoring configuration for a federation
+type MonitoringConfig struct {
+	Enabled                bool   `yaml:"enabled"`                  // Enable monitoring for this federation
+	MonitoringServerURL    string `yaml:"monitoring_server_url"`    // URL of the monitoring server
+	CollectResourceMetrics bool   `yaml:"collect_resource_metrics"` // Collect system resource metrics
+	ReportInterval         int    `yaml:"report_interval"`          // Interval in seconds for metric reporting
+	EnableRealTimeEvents   bool   `yaml:"enable_realtime_events"`   // Enable real-time event streaming
 }

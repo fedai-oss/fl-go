@@ -1,0 +1,67 @@
+# FL Monitoring Configuration
+enabled: true
+
+# API Server Configuration
+api_port: 8080
+webui_port: 3000
+
+# Data Retention
+metrics_retention: "24h"  # How long to keep metrics data
+
+# Collection Settings
+collection_interval: "30s"  # How often to collect resource metrics
+
+# Feature Flags
+enable_resource_metrics: true
+enable_realtime_events: true
+
+# Storage Backend
+storage_backend: "memory"  # Options: memory, sqlite, postgres
+# database_url: "postgres://user:password@localhost/fl_monitoring"  # For postgres backend
+
+# Monitoring Levels
+log_level: "info"  # debug, info, warning, error
+
+# Performance Settings
+max_metrics_per_source: 1000
+event_buffer_size: 10000
+websocket_buffer_size: 100
+
+# Resource Monitoring Thresholds
+resource_thresholds:
+  cpu_warning: 80.0
+  cpu_critical: 95.0
+  memory_warning: 85.0
+  memory_critical: 95.0
+  disk_warning: 90.0
+  disk_critical: 98.0
+
+# Alert Configuration
+alerts:
+  enabled: true
+  channels:
+    - type: "log"
+      level: "warning"
+    # - type: "email"
+    #   smtp_server: "localhost:587"
+    #   recipients: ["admin@example.com"]
+    # - type: "slack"
+    #   webhook_url: "https://hooks.slack.com/services/..."
+
+# Dashboard Configuration
+dashboards:
+  default_refresh_interval: "30s"
+  auto_save: true
+  
+# Security (for production use)
+security:
+  enable_cors: true
+  allowed_origins: ["*"]  # Restrict in production
+  api_key_required: false
+  # api_key: "your-secret-api-key"
+  
+# Cleanup Configuration
+cleanup:
+  enabled: true
+  interval: "1h"
+  max_age: "7d"

@@ -1,0 +1,47 @@
+# Federated Learning Plan with Monitoring
+rounds: 10
+
+collaborators:
+  - id: "collab_001"
+    address: "localhost:8001"
+  - id: "collab_002"
+    address: "localhost:8002"
+  - id: "collab_003"
+    address: "localhost:8003"
+
+aggregator:
+  address: "localhost:8000"
+
+initial_model: "models/model_init.pt"
+output_model: "models/model_final.pt"
+
+tasks:
+  train:
+    script: "scripts/train.py"
+    args:
+      batch_size: 32
+      learning_rate: 0.01
+      epochs: 5
+
+# FL Configuration
+mode: "async"  # sync or async
+
+async_config:
+  max_staleness: 300      # 5 minutes
+  min_updates: 1          # Minimum updates before aggregation
+  aggregation_delay: 10   # 10 seconds delay
+  staleness_weight: 0.95  # Exponential decay factor
+
+algorithm:
+  name: "fedavg"
+  hyperparameters:
+    learning_rate: 0.01
+    momentum: 0.9
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  monitoring_server_url: "http://localhost:8080"
+  collect_resource_metrics: true
+  report_interval: 30  # Report metrics every 30 seconds
+  enable_realtime_events: true
