@@ -36,6 +36,9 @@ FL-Go provides the same CLI-driven workflow as the original OpenFL but with Go h
 - **Multiple Aggregation Algorithms**: Support for FedAvg, FedOpt, and FedProx algorithms
 - **Modular Algorithm Framework**: Easy to add new aggregation algorithms
 - **Hyperparameter Configuration**: Fine-tune algorithm behavior via YAML configuration
+- **Comprehensive Monitoring**: Real-time web UI with REST API for tracking FL metrics
+- **Event Streaming**: WebSocket-based real-time monitoring of federation progress
+- **Resource Monitoring**: Track system performance and collaborator health
 
 ## Architecture
 
@@ -45,12 +48,19 @@ FL-Go provides the same CLI-driven workflow as the original OpenFL but with Go h
 │   (Go Server)   │             │   (Go Client)   │
 └─────────────────┘             └─────────────────┘
          │                               │
-         │                               │
+         │ metrics                       │ metrics
          ▼                               ▼
 ┌─────────────────┐             ┌─────────────────┐
 │ Model Averaging │             │ Training Script │
 │   (Go Logic)    │             │   (Python ML)   │
 └─────────────────┘             └─────────────────┘
+         │
+         │ monitoring
+         ▼
+┌─────────────────┐      REST/WS    ┌─────────────────┐
+│ Monitoring API  │◄────────────────┤   Web Dashboard │
+│  (Go Server)    │                 │  (React TypeScript)│
+└─────────────────┘                 └─────────────────┘
 ```
 
 ## Quick Start
@@ -130,6 +140,14 @@ async_config:
   min_updates: 1          # Minimum updates before aggregation
   aggregation_delay: 10   # Delay in seconds before aggregating
   staleness_weight: 0.95  # Weight decay factor for stale updates
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  monitoring_server_url: "http://localhost:8080"
+  collect_resource_metrics: true
+  report_interval: 30
+  enable_realtime_events: true
 ```
 
 ### 3. Start the Aggregator
@@ -254,6 +272,13 @@ make run-demo
 # Run demo with large model (1000 parameters, 10 rounds)
 make run-demo-large
 
+# Start monitoring server
+make run-monitor
+
+# Build and start web UI
+make install-web-deps
+make start-web
+
 # Clean build artifacts
 make clean
 
@@ -358,6 +383,10 @@ go build -o fx cmd/fx/main.go
 | **Async FL Support** | ❌ | ✅ (Papaya-based) |
 | **Mode Switching** | ❌ | ✅ |
 | **Staleness Handling** | ❌ | ✅ |
+| **Web UI Monitoring** | ❌ | ✅ (Real-time) |
+| **REST API** | ❌ | ✅ (Comprehensive) |
+| **Event Streaming** | ❌ | ✅ (WebSocket) |
+| **Resource Monitoring** | ❌ | ✅ |
 
 ## License
 
@@ -411,11 +440,67 @@ algorithm:
 
 For comprehensive documentation on algorithms, hyperparameter tuning, and implementation details, see [Algorithm Guide](docs/ALGORITHMS.md).
 
+## Monitoring & Observability
+
+FL-Go includes a comprehensive monitoring system for tracking federated learning progress in real-time:
+
+### Features
+
+- **🌐 Modern Web Dashboard**: Beautiful, responsive React-based interface
+- **📊 Real-time Metrics**: Live federation progress, collaborator status, and training metrics
+- **🔗 REST API**: Complete API for programmatic access to all monitoring data
+- **⚡ WebSocket Streaming**: Real-time event updates for live monitoring
+- **📈 Performance Analytics**: Track convergence, efficiency, and resource utilization
+- **🎯 Event Timeline**: Comprehensive logging of all federation activities
+
+### Quick Start
+
+```bash
+# Start the monitoring server
+make run-monitor
+
+# Or manually
+go run cmd/monitor/main.go --port 8080
+```
+
+**Access the monitoring system:**
+- **API**: http://localhost:8080/api/v1/health
+- **Web UI**: http://localhost:3000 (after `make install-web-deps && make start-web`)
+
+### Configuration
+
+Add monitoring to your FL plan:
+
+```yaml
+monitoring:
+  enabled: true
+  monitoring_server_url: "http://localhost:8080"
+  collect_resource_metrics: true
+  report_interval: 30
+  enable_realtime_events: true
+```
+
+### API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/federations` | List all federations |
+| `GET /api/v1/collaborators` | Get collaborator metrics |
+| `GET /api/v1/rounds` | Training round statistics |
+| `GET /api/v1/events` | Event timeline |
+| `WS /api/v1/ws` | Real-time event stream |
+
+For complete documentation, API reference, and integration guide, see **[Monitoring Guide](MONITORING.md)**.
+
 ## Roadmap
 
 - [ ] Add mTLS security
 - [x] **Implement additional aggregation algorithms (FedOpt, FedProx)** ✅
+- [x] **Web UI for monitoring** ✅
 - [ ] Add more algorithms (FedNova, SCAFFOLD, LAG)
 - [ ] Add TEE support
-- [ ] Web UI for monitoring
+- [ ] Enhanced security features (API keys, OAuth)
+- [ ] Database backends for monitoring (PostgreSQL, Redis)
 - [ ] Integration with popular ML frameworks
+- [ ] Mobile-responsive monitoring dashboard
+- [ ] Advanced analytics and ML insights
