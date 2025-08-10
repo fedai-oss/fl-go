@@ -6,10 +6,11 @@ MONITOR_BINARY=fl-monitor
 
 # Build all binaries
 build:
+	mkdir -p bin/ build/
 	go build -o bin/$(BINARY_NAME) cmd/aggregator/main.go
 	go build -o bin/fl-collaborator cmd/collaborator/main.go
 	go build -o bin/$(MONITOR_BINARY) cmd/monitor/main.go
-	go build -o fx cmd/fx/main.go
+	go build -o build/fx cmd/fx/main.go
 
 # Build monitoring server only
 build-monitor:
@@ -75,7 +76,7 @@ validate:
 
 # Clean build artifacts
 clean:
-	rm -rf bin/
+	rm -rf bin/ build/
 	rm -f *.log *.out coverage.html fx
 	cd web && rm -rf dist/ node_modules/
 
