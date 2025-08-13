@@ -27,11 +27,20 @@ cleanup() {
     echo -e "${YELLOW}🧹 Cleaning up processes...${NC}"
     pkill -f "fx aggregator" 2>/dev/null || true
     pkill -f "fx collaborator" 2>/dev/null || true
+    
+    # Clean up workspace directories to prevent "File exists" errors
+    echo -e "${YELLOW}🧹 Cleaning up workspaces...${NC}"
+    rm -rf "${WORKSPACE_ROOT}" 2>/dev/null || true
+    rm -f *.log 2>/dev/null || true
+    
     sleep 2
 }
 
 # Trap to ensure cleanup on exit
 trap cleanup EXIT
+
+# Initial cleanup to prevent conflicts
+cleanup
 
 # Helper function to wait for file and parse logs
 wait_and_parse_logs() {
