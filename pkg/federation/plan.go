@@ -15,6 +15,8 @@ type FLPlan struct {
 	Algorithm AlgorithmConfig `yaml:"algorithm"` // aggregation algorithm configuration
 	// Monitoring configuration
 	Monitoring MonitoringConfig `yaml:"monitoring"` // monitoring configuration
+	// Security configuration
+	Security SecurityConfig `yaml:"security"` // security configuration
 }
 
 type FLMode string
@@ -61,4 +63,20 @@ type MonitoringConfig struct {
 	CollectResourceMetrics bool   `yaml:"collect_resource_metrics"` // Collect system resource metrics
 	ReportInterval         int    `yaml:"report_interval"`          // Interval in seconds for metric reporting
 	EnableRealTimeEvents   bool   `yaml:"enable_realtime_events"`   // Enable real-time event streaming
+}
+
+// SecurityConfig contains security configuration for a federation
+type SecurityConfig struct {
+	TLS TLSConfig `yaml:"tls"` // TLS configuration
+}
+
+// TLSConfig represents the TLS configuration for mTLS
+type TLSConfig struct {
+	Enabled          bool   `yaml:"enabled"`            // Enable TLS/mTLS
+	CertPath         string `yaml:"cert_path"`          // Path to server certificate
+	KeyPath          string `yaml:"key_path"`           // Path to server private key
+	CAPath           string `yaml:"ca_path"`            // Path to CA certificate
+	ServerName       string `yaml:"server_name"`        // Server name for certificate validation
+	InsecureSkipTLS  bool   `yaml:"insecure_skip_tls"`  // Skip TLS verification (development only)
+	AutoGenerateCert bool   `yaml:"auto_generate_cert"` // Auto-generate self-signed certificates
 }

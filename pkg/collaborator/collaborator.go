@@ -12,6 +12,7 @@ import (
 
 	pb "github.com/ishaileshpant/fl-go/api"
 	"github.com/ishaileshpant/fl-go/pkg/federation"
+	"github.com/ishaileshpant/fl-go/pkg/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -28,7 +29,25 @@ func NewCollaborator(plan *federation.FLPlan, id string) *SimpleCollaborator {
 
 func (c *SimpleCollaborator) Connect() error {
 	log.Printf("Connecting to aggregator at %s", c.plan.Aggregator.Address)
-	conn, err := grpc.NewClient(c.plan.Aggregator.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	// Initialize TLS manager for secure communication
+	tlsManager, err := security.NewTLSManager(security.TLSConfig(c.plan.Security.TLS), "certs")
+	if err != nil {
+		return fmt.Errorf("failed to initialize TLS manager: %w", err)
+	}
+
+	// Get client dial options with TLS support
+	dialOpts, err := tlsManager.NewClientDialOptions()
+	if err != nil {
+		return fmt.Errorf("failed to get client dial options: %w", err)
+	}
+
+	// Fallback to insecure credentials if TLS is not enabled
+	if len(dialOpts) == 0 {
+		dialOpts = []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	}
+
+	conn, err := grpc.NewClient(c.plan.Aggregator.Address, dialOpts...)
 	if err != nil {
 		return err
 	}

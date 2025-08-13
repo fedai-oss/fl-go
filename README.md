@@ -492,15 +492,140 @@ monitoring:
 
 For complete documentation, API reference, and integration guide, see **[Monitoring Guide](MONITORING.md)**.
 
+## Security
+
+FL-Go includes comprehensive security features for production federated learning deployments:
+
+### 🔒 mTLS (Mutual TLS) Security
+
+Secure gRPC communication between aggregators and collaborators with mutual authentication:
+
+**Features:**
+- **Auto-generated certificates** for development and testing
+- **Custom certificate support** for production deployments
+- **Mutual authentication** ensures both client and server identity verification
+- **TLS 1.2+ encryption** for all federated learning communications
+- **Certificate validation** with proper hostname verification
+
+**Configuration:**
+```yaml
+security:
+  tls:
+    enabled: true
+    auto_generate_cert: true  # Auto-generate for development
+    server_name: "fl-go-server"
+    insecure_skip_tls: false  # Never true in production
+    # Optional: Custom certificate paths
+    # cert_path: "certs/server.crt"
+    # key_path: "certs/server.key" 
+    # ca_path: "certs/ca.crt"
+```
+
+**Quick Start with mTLS:**
+```bash
+# Use the secure example plan
+cp plans/secure_example_plan.yaml my_secure_plan.yaml
+
+# Start aggregator with mTLS
+fx aggregator start --plan my_secure_plan.yaml
+
+# Start collaborators with mTLS
+fx collaborator start collab1 --plan my_secure_plan.yaml
+```
+
+**Production Deployment:**
+- Generate proper certificates signed by your organization's CA
+- Set `auto_generate_cert: false` and provide certificate paths
+- Enable certificate revocation checking
+- Use proper DNS names in certificates
+
+### 🔐 Enhanced Security Features
+
+**API Key & JWT Authentication:**
+```yaml
+# monitoring_config.yaml
+auth:
+  enabled: true
+  required_role: "readonly"  # admin, monitor, readonly
+  api_key:
+    enabled: true
+    header_name: "X-API-Key"
+    keys:
+      "admin-key-12345": "admin"
+      "monitor-key-67890": "monitor"
+      "readonly-key-abcde": "readonly"
+  jwt:
+    enabled: true
+    secret: "your-jwt-secret-key"
+    token_expiry: "24h"
+    issuer: "fl-go-monitoring"
+```
+
+**Using API Keys:**
+```bash
+# Monitor with API key
+curl -H "X-API-Key: monitor-key-67890" http://localhost:8080/api/v1/federations
+
+# Admin access with API key
+curl -H "X-API-Key: admin-key-12345" http://localhost:8080/api/v1/federations
+```
+
+**Role-Based Access Control:**
+- **Admin**: Full access to all endpoints and operations
+- **Monitor**: Read/write access to monitoring data
+- **ReadOnly**: Read-only access to monitoring data
+
+### 💾 Database Backends
+
+**Memory Storage (Default):**
+```yaml
+storage:
+  backend: "memory"
+  memory:
+    max_entries: 10000
+```
+
+**PostgreSQL Storage:**
+```yaml
+storage:
+  backend: "postgresql"
+  postgresql:
+    host: "localhost"
+    port: 5432
+    user: "fl_user"
+    password: "fl_password"
+    database: "fl_monitoring"
+    ssl_mode: "require"
+    max_connections: 20
+```
+
+**Redis Storage:**
+```yaml
+storage:
+  backend: "redis"
+  redis:
+    address: "localhost:6379"
+    password: ""
+    database: 0
+    pool_size: 10
+    ttl: "24h"
+```
+
+**Production Recommendations:**
+- Use PostgreSQL for persistent, queryable storage
+- Use Redis for high-performance, distributed scenarios
+- Configure proper backup strategies for database backends
+- Set appropriate TTL values for Redis to manage memory usage
+
 ## Roadmap
 
-- [ ] Add mTLS security
+- [x] **Add mTLS security** ✅
 - [x] **Implement additional aggregation algorithms (FedOpt, FedProx)** ✅
 - [x] **Web UI for monitoring** ✅
+- [x] **Enhanced security features (API keys, OAuth)** ✅
+- [x] **Database backends for monitoring (PostgreSQL, Redis)** ✅
 - [ ] Add more algorithms (FedNova, SCAFFOLD, LAG)
 - [ ] Add TEE support
-- [ ] Enhanced security features (API keys, OAuth)
-- [ ] Database backends for monitoring (PostgreSQL, Redis)
 - [ ] Integration with popular ML frameworks
 - [ ] Mobile-responsive monitoring dashboard
 - [ ] Advanced analytics and ML insights

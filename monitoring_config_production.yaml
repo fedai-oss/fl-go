@@ -1,0 +1,129 @@
+# FL Monitoring Production Configuration
+# This configuration demonstrates all security and database features
+
+enabled: true
+
+# API Server Configuration
+api_port: 8080
+webui_port: 3000
+
+# Data Retention
+metrics_retention: "7d"  # Keep metrics for 7 days in production
+
+# Collection Settings
+collection_interval: "30s"
+
+# Feature Flags
+enable_resource_metrics: true
+enable_realtime_events: true
+
+# Storage Backend - PostgreSQL for production
+storage:
+  backend: "postgresql"
+  postgresql:
+    host: "localhost"
+    port: 5432
+    user: "fl_monitoring_user"
+    password: "secure_password_change_me"
+    database: "fl_monitoring"
+    ssl_mode: "require"
+    max_connections: 20
+
+# Alternative Redis configuration (uncomment to use)
+# storage:
+#   backend: "redis"
+#   redis:
+#     address: "localhost:6379"
+#     password: "redis_password_if_needed"
+#     database: 0
+#     pool_size: 20
+#     ttl: "7d"
+
+# Monitoring Levels
+log_level: "info"
+
+# Performance Settings
+max_metrics_per_source: 10000
+event_buffer_size: 50000
+websocket_buffer_size: 1000
+
+# Resource Monitoring Thresholds
+resource_thresholds:
+  cpu_warning: 80.0
+  cpu_critical: 95.0
+  memory_warning: 85.0
+  memory_critical: 95.0
+  disk_warning: 90.0
+  disk_critical: 98.0
+
+# Alert Configuration
+alerts:
+  enabled: true
+  channels:
+    - type: "log"
+      level: "warning"
+    # Add email/slack notifications in production
+    # - type: "email"
+    #   smtp_server: "smtp.company.com:587"
+    #   recipients: ["admin@company.com", "devops@company.com"]
+    # - type: "slack"
+    #   webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+
+# Dashboard Configuration
+dashboards:
+  default_refresh_interval: "10s"
+  auto_save: true
+
+# Security Configuration
+security:
+  enable_cors: true
+  allowed_origins: ["https://fl-monitor.company.com", "https://localhost:3000"]
+
+# Authentication Configuration - PRODUCTION READY
+auth:
+  enabled: true
+  required_role: "readonly"  # Require at least readonly role
+
+  # API Key Authentication
+  api_key:
+    enabled: true
+    header_name: "X-API-Key"
+    keys:
+      # Generate secure API keys for production!
+      "fl-admin-prod-key-xxxxxxxxxxxx": "admin"
+      "fl-monitor-prod-key-xxxxxxxxxxxx": "monitor"
+      "fl-readonly-prod-key-xxxxxxxxxxxx": "readonly"
+      "fl-dashboard-key-xxxxxxxxxxxx": "readonly"
+
+  # JWT Authentication
+  jwt:
+    enabled: true
+    secret: "CHANGE-THIS-TO-SECURE-256-BIT-KEY-IN-PRODUCTION"
+    token_expiry: "8h"          # 8 hour work day
+    refresh_expiry: "24h"       # 24 hour refresh
+    issuer: "fl-go-monitoring"
+    require_signed_jwt: true
+
+  # OAuth Configuration (for future integration)
+  oauth:
+    enabled: false
+    provider: "google"  # google, github, custom
+    client_id: ""
+    client_secret: ""
+    redirect_url: "https://fl-monitor.company.com/auth/callback"
+    scopes: ["openid", "profile", "email"]
+
+# Cleanup Configuration
+cleanup:
+  enabled: true
+  interval: "6h"      # Clean up every 6 hours
+  max_age: "30d"      # Keep data for 30 days
+
+# Production Notes:
+# 1. Change all passwords and API keys
+# 2. Use environment variables for sensitive data
+# 3. Set up proper SSL certificates
+# 4. Configure firewall rules
+# 5. Set up database backups
+# 6. Configure log rotation
+# 7. Set up monitoring for the monitoring system itself

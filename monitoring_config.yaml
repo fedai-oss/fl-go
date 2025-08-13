@@ -59,6 +59,32 @@ security:
   allowed_origins: ["*"]  # Restrict in production
   api_key_required: false
   # api_key: "your-secret-api-key"
+
+# Authentication Configuration
+auth:
+  enabled: true
+  required_role: "readonly"  # admin, monitor, readonly
+  api_key:
+    enabled: true
+    header_name: "X-API-Key"
+    keys:
+      "admin-key-12345": "admin"
+      "monitor-key-67890": "monitor"
+      "readonly-key-abcde": "readonly"
+  jwt:
+    enabled: true
+    secret: "your-jwt-secret-key-change-in-production"
+    token_expiry: "24h"
+    refresh_expiry: "7d"
+    issuer: "fl-go-monitoring"
+    require_signed_jwt: true
+  oauth:
+    enabled: false
+    provider: "google"
+    client_id: ""
+    client_secret: ""
+    redirect_url: "http://localhost:8080/auth/callback"
+    scopes: ["openid", "profile", "email"]
   
 # Cleanup Configuration
 cleanup:

@@ -13,6 +13,7 @@ import (
 
 	pb "github.com/ishaileshpant/fl-go/api"
 	"github.com/ishaileshpant/fl-go/pkg/federation"
+	"github.com/ishaileshpant/fl-go/pkg/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -103,7 +104,24 @@ func (a *FedAvgAggregator) Start(ctx context.Context) error {
 		return err
 	}
 
-	a.srv = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	// Initialize TLS manager for secure communication
+	tlsManager, err := security.NewTLSManager(security.TLSConfig(a.plan.Security.TLS), "certs")
+	if err != nil {
+		return fmt.Errorf("failed to initialize TLS manager: %w", err)
+	}
+
+	// Get server options with TLS support
+	serverOpts, err := tlsManager.NewServerOptions()
+	if err != nil {
+		return fmt.Errorf("failed to get server options: %w", err)
+	}
+
+	// Fallback to insecure credentials if TLS is not enabled
+	if len(serverOpts) == 0 {
+		serverOpts = []grpc.ServerOption{grpc.Creds(insecure.NewCredentials())}
+	}
+
+	a.srv = grpc.NewServer(serverOpts...)
 	pb.RegisterFederatedLearningServer(a.srv, a)
 
 	// Start gRPC server in background
@@ -244,7 +262,24 @@ func (a *AsyncFedAvgAggregator) Start(ctx context.Context) error {
 		return err
 	}
 
-	a.srv = grpc.NewServer(grpc.Creds(insecure.NewCredentials()))
+	// Initialize TLS manager for secure communication
+	tlsManager, err := security.NewTLSManager(security.TLSConfig(a.plan.Security.TLS), "certs")
+	if err != nil {
+		return fmt.Errorf("failed to initialize TLS manager: %w", err)
+	}
+
+	// Get server options with TLS support
+	serverOpts, err := tlsManager.NewServerOptions()
+	if err != nil {
+		return fmt.Errorf("failed to get server options: %w", err)
+	}
+
+	// Fallback to insecure credentials if TLS is not enabled
+	if len(serverOpts) == 0 {
+		serverOpts = []grpc.ServerOption{grpc.Creds(insecure.NewCredentials())}
+	}
+
+	a.srv = grpc.NewServer(serverOpts...)
 	pb.RegisterFederatedLearningServer(a.srv, a)
 
 	// Start gRPC server in background

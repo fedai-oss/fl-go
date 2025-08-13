@@ -1,0 +1,54 @@
+# Secure Federated Learning Configuration with mTLS
+mode: "sync"  # Options: "sync" or "async"
+rounds: 3
+
+# Algorithm configuration
+algorithm:
+  name: "fedavg"
+  hyperparameters: {}
+
+collaborators:
+  - id: "collab1"
+    address: "localhost:50052"
+  - id: "collab2"
+    address: "localhost:50053"
+
+aggregator:
+  address: "localhost:50051"
+
+initial_model: "models/init_model.pt"
+output_model: "models/aggregated_model.pt"
+
+tasks:
+  train:
+    script: "scripts/train.py"
+    args:
+      epochs: 2
+      batch_size: 32
+
+# Security configuration with mTLS
+security:
+  tls:
+    enabled: true
+    auto_generate_cert: true  # Auto-generate certificates for development
+    server_name: "fl-go-server"  # Server name for certificate validation
+    insecure_skip_tls: false  # Set to true only for development
+    # Optional: specify custom certificate paths
+    # cert_path: "certs/server.crt"
+    # key_path: "certs/server.key"
+    # ca_path: "certs/ca.crt"
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  monitoring_server_url: "http://localhost:8080"
+  collect_resource_metrics: true
+  report_interval: 30
+  enable_realtime_events: true
+
+# Async-specific configuration (used when mode: "async")
+async_config:
+  max_staleness: 300      # Maximum staleness in seconds (5 minutes)
+  min_updates: 1          # Minimum updates before aggregation
+  aggregation_delay: 10   # Delay in seconds before aggregating
+  staleness_weight: 0.95  # Weight decay factor for stale updates (0.95^staleness)
