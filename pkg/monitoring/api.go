@@ -60,7 +60,7 @@ func (s *APIServer) Start() error {
 		// In production, use specific origins
 		allowedOrigins = s.config.AllowedOrigins
 	}
-	
+
 	c := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
