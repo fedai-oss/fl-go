@@ -159,6 +159,8 @@ type MonitoringConfig struct {
 	EnableRealTimeEvents  bool          `yaml:"enable_realtime_events" json:"enable_realtime_events"`
 	StorageBackend        string        `yaml:"storage_backend" json:"storage_backend"` // memory/sqlite/postgres
 	DatabaseURL           string        `yaml:"database_url,omitempty" json:"database_url,omitempty"`
+	Production            bool          `yaml:"production" json:"production"`
+	AllowedOrigins        []string      `yaml:"allowed_origins,omitempty" json:"allowed_origins,omitempty"`
 }
 
 // APIResponse represents a standard API response structure

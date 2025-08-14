@@ -31,7 +31,17 @@ func NewAPIServer(service MonitoringService, config *MonitoringConfig) *APIServe
 		router:  mux.NewRouter(),
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return true // Allow all origins in development
+				origin := r.Header.Get("Origin")
+				allowedOrigins := []string{"http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"}
+				if config.Production {
+					allowedOrigins = config.AllowedOrigins
+				}
+				for _, allowed := range allowedOrigins {
+					if origin == allowed {
+						return true
+					}
+				}
+				return false
 			},
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -44,11 +54,19 @@ func NewAPIServer(service MonitoringService, config *MonitoringConfig) *APIServe
 
 // Start starts the API server
 func (s *APIServer) Start() error {
-	// Setup CORS
+	// Setup CORS with secure defaults
+	allowedOrigins := []string{"http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"}
+	if s.config.Production {
+		// In production, use specific origins
+		allowedOrigins = s.config.AllowedOrigins
+	}
+	
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"}, // Configure appropriately for production
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"*"},
+		AllowedOrigins:   allowedOrigins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-API-Key", "X-Requested-With"},
+		AllowCredentials: true,
+		MaxAge:           300, // 5 minutes
 	})
 
 	handler := c.Handler(s.router)
