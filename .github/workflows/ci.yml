@@ -336,6 +336,21 @@ jobs:
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
       run: |
+        # Check if FOSSA API key is available
+        if [ -z "$FOSSA_API_KEY" ]; then
+          echo "⚠️  FOSSA_API_KEY not set. Skipping FOSSA analysis."
+          echo "   To enable FOSSA analysis, add your FOSSA API key to repository secrets:"
+          echo "   1. Go to https://app.fossa.com/account/settings/integrations/api_tokens"
+          echo "   2. Create a new API token"
+          echo "   3. Add it to your repository secrets as FOSSA_API_KEY"
+          echo "   4. Re-run this workflow"
+          echo ""
+          echo "   For now, creating placeholder reports..."
+          echo '{"dependencies": [], "message": "FOSSA API key not configured"}' > fossa-dependencies.json
+          echo '{"licenses": [], "message": "FOSSA API key not configured"}' > fossa-licenses.json
+          exit 0
+        fi
+        
         # Initialize FOSSA project if not already done
         fossa init || echo "FOSSA project already initialized"
         
