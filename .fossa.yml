@@ -1,0 +1,97 @@
+# FOSSA configuration for FL-GO project
+# This file configures how FOSSA analyzes dependencies and licenses
+
+version: 3
+
+# Project metadata
+name: fl-go
+displayName: FL-GO - Federated Learning in Go
+projectURL: https://github.com/fedai-oss/fl-go
+
+# Analysis targets
+analyze:
+  # Go modules analysis
+  modules:
+    - name: fl-go-go-modules
+      type: go
+      path: .
+      options:
+        allow-unresolved: false
+        allow-nested: true
+
+# Test configuration for policy violations
+test:
+  # Fail on high severity vulnerabilities
+  failOnSeverity: high
+  
+  # Allow certain license types
+  allowlist:
+    licenses:
+      - MIT
+      - Apache-2.0
+      - BSD-2-Clause
+      - BSD-3-Clause
+      - ISC
+      - MPL-2.0
+      - CC0-1.0
+      - Unlicense
+      - WTFPL
+
+# Report configuration
+reports:
+  dependencies:
+    format: json
+    output: fossa-dependencies.json
+  licenses:
+    format: json
+    output: fossa-licenses.json
+  attribution:
+    format: json
+    output: fossa-attribution.json
+
+# Policy configuration
+policy:
+  # Security policy
+  security:
+    # Fail on high severity vulnerabilities
+    failOnSeverity: high
+    # Allow certain known false positives
+    allowlist:
+      vulnerabilities:
+        - id: "example-vuln-id"
+          reason: "False positive - not applicable to our use case"
+  
+  # License policy
+  license:
+    # Require license compliance
+    requireCompliance: true
+    # Allow common open source licenses
+    allowlist:
+      - MIT
+      - Apache-2.0
+      - BSD-2-Clause
+      - BSD-3-Clause
+      - ISC
+      - MPL-2.0
+      - CC0-1.0
+      - Unlicense
+      - WTFPL
+    # Block problematic licenses
+    blocklist:
+      - GPL-1.0
+      - GPL-2.0
+      - GPL-3.0
+      - AGPL-1.0
+      - AGPL-3.0
+      - LGPL-2.0
+      - LGPL-2.1
+      - LGPL-3.0
+
+# CI/CD integration
+ci:
+  # Fail the build on policy violations
+  failOnPolicyViolation: true
+  # Generate reports for CI
+  generateReports: true
+  # Comment on pull requests
+  commentOnPR: true

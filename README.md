@@ -5,6 +5,7 @@
 
 [![CI Status](https://github.com/fedai-oss/fl-go/actions/workflows/ci.yml/badge.svg)](https://github.com/fedai-oss/fl-go/actions/workflows/ci.yml)
 [![Security](https://github.com/fedai-oss/fl-go/actions/workflows/codeql.yml/badge.svg)](https://github.com/fedai-oss/fl-go/actions/workflows/codeql.yml)
+[![FOSSA](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ffedai-oss%2Ffl-go.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Ffedai-oss%2Ffl-go)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/fedai-oss/fl-go?color=blue&logo=go)](https://golang.org/dl/)
 [![License](https://img.shields.io/github/license/fedai-oss/fl-go?color=green)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/fedai-oss/fl-go?include_prereleases&sort=semver)](https://github.com/fedai-oss/fl-go/releases)
@@ -387,6 +388,44 @@ go build -o fx cmd/fx/main.go
 | **REST API** | ❌ | ✅ (Comprehensive) |
 | **Event Streaming** | ❌ | ✅ (WebSocket) |
 | **Resource Monitoring** | ❌ | ✅ |
+
+## Security & Compliance
+
+### FOSSA Dependency Analysis
+
+FL-GO uses [FOSSA](https://fossa.com/) for comprehensive dependency analysis, license compliance, and security vulnerability scanning.
+
+#### Setup FOSSA Locally
+
+```bash
+# Run the setup script
+./scripts/setup_fossa.sh
+
+# Set your FOSSA API key
+export FOSSA_API_KEY=your_api_key_here
+
+# Initialize and analyze
+fossa init
+fossa analyze
+fossa test
+```
+
+#### FOSSA Integration
+
+- **CI/CD**: FOSSA analysis runs automatically on every push and PR
+- **Reports**: Dependency and license reports are generated as artifacts
+- **Policy**: Configured to fail on high-severity vulnerabilities
+- **Licenses**: Allows common open source licenses, blocks problematic ones
+- **Dashboard**: View detailed analysis at [FOSSA Dashboard](https://app.fossa.com/projects/git%2Bgithub.com%2Ffedai-oss%2Ffl-go)
+
+#### FOSSA Configuration
+
+The project includes a comprehensive `.fossa.yml` configuration that:
+- Analyzes Go modules for dependencies
+- Tests for security vulnerabilities
+- Validates license compliance
+- Generates detailed reports
+- Integrates with CI/CD pipelines
 
 ## License
 

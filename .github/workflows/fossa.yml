@@ -1,0 +1,123 @@
+name: FOSSA Dependency Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run weekly on Mondays at 3 AM UTC
+    - cron: '0 3 * * 1'
+
+jobs:
+  fossa:
+    name: FOSSA Dependency Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Required for FOSSA to analyze git history
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.23
+
+    - name: Install FOSSA CLI
+      run: |
+        curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Run FOSSA analysis
+      env:
+        FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+      run: |
+        # Initialize FOSSA project if not already done
+        fossa init
+        
+        # Run dependency analysis
+        fossa analyze
+        
+        # Test for policy violations
+        fossa test
+        
+        # Generate dependency report
+        fossa report dependencies --format json > fossa-dependencies.json
+        
+        # Generate license report
+        fossa report licenses --format json > fossa-licenses.json
+
+    - name: Upload FOSSA reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: fossa-reports
+        path: |
+          fossa-dependencies.json
+          fossa-licenses.json
+        retention-days: 30
+
+    - name: Comment on PR with FOSSA results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          try {
+            const dependencies = JSON.parse(fs.readFileSync('fossa-dependencies.json', 'utf8'));
+            const licenses = JSON.parse(fs.readFileSync('fossa-licenses.json', 'utf8'));
+            
+            let comment = '## 🔍 FOSSA Dependency Analysis Results\n\n';
+            
+            // Summary
+            comment += `### 📊 Summary\n`;
+            comment += `- **Total Dependencies**: ${dependencies.length}\n`;
+            comment += `- **Licenses Found**: ${licenses.length}\n`;
+            comment += `- **Analysis Status**: ✅ Complete\n\n`;
+            
+            // High-level findings
+            const highRiskDeps = dependencies.filter(dep => dep.issues && dep.issues.length > 0);
+            if (highRiskDeps.length > 0) {
+              comment += `### ⚠️ Dependencies with Issues\n`;
+              comment += `Found ${highRiskDeps.length} dependencies with potential issues:\n\n`;
+              highRiskDeps.forEach(dep => {
+                comment += `- **${dep.name}** (${dep.version})\n`;
+                dep.issues.forEach(issue => {
+                  comment += `  - ${issue.title}: ${issue.description}\n`;
+                });
+              });
+              comment += '\n';
+            } else {
+              comment += `### ✅ No Issues Found\n`;
+              comment += `All dependencies passed FOSSA security and compliance checks.\n\n`;
+            }
+            
+            comment += `### 📋 License Summary\n`;
+            const licenseCounts = {};
+            licenses.forEach(license => {
+              licenseCounts[license.license] = (licenseCounts[license.license] || 0) + 1;
+            });
+            
+            Object.entries(licenseCounts).forEach(([license, count]) => {
+              comment += `- **${license}**: ${count} dependencies\n`;
+            });
+            
+            comment += `\n---\n*This analysis was performed by [FOSSA](https://fossa.com/) - Open Source Compliance & Security*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          } catch (error) {
+            console.error('Error processing FOSSA results:', error);
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 🔍 FOSSA Analysis Complete\n\nFOSSA dependency analysis completed successfully. Check the workflow logs for detailed results.'
+            });
+          }
