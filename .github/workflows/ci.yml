@@ -162,7 +162,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t fl-go:test .
+        docker build -t fl-go:test -f deploy/docker/Dockerfile .
 
     - name: Test Docker image
       run: |
