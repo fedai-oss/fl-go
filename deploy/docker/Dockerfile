@@ -38,11 +38,12 @@ WORKDIR /app
 # Copy binary from builder stage
 COPY --from=builder /app/fx .
 
-# Copy Python training script
-COPY --from=builder /app/scripts/create_initial_model.py ./scripts/
+# Copy Python training scripts
+COPY --from=builder /app/scripts/tools/create_initial_model.py ./scripts/tools/
+COPY --from=builder /app/scripts/tools/train.py ./scripts/tools/
 
 # Create necessary directories
-RUN mkdir -p data save logs src
+RUN mkdir -p data save logs src scripts/tools
 
 # Change ownership to app user
 RUN chown -R appuser:appgroup /app
